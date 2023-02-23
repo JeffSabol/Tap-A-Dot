@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+</head>
+
+<body>
+
+    <script>
+        var config = {
+            type: Phaser.AUTO,
+            width: 900,
+            height: 900,
+            physics: {
+                default: 'matter',
+                matter: {
+                    gravity: {
+                        y: 0
+                    },
+                    debug: true
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            },
+            audio: {
+                disableWebAudio: true
+            }
+        };
+
+        var blue1;
+        var score = 0;
+        var scoreText;
+        var cdText;
+        var bg;
+        var playButton;
+        var game = new Phaser.Game(config);
+        var music;
+        var fullSong;
+        var startGame = false;
+        var second = 0;
+        var dotInterval;
+
+        function preload() {
+            this.load.image('logo', 'assets/Logo.png');
+            this.load.image('play', 'assets/PlayNow.png');
+            this.load.image('shop', 'assets/ShopNow.png');
+            this.load.image('brick', 'assets/brickbg.png');
+            this.load.audio('theme', 'assets/loop.mp3');
+            this.load.audio('main', 'assets/song.mp3');
+
+            // Dots
+            this.load.image('blue1', 'assets/dots/Blue1.png');
+            this.load.image('blue2', 'assets/dots/Blue2.png');
+            this.load.image('blue3', 'assets/dots/Blue3.png');
+            this.load.image('blue4', 'assets/dots/Blue4.png');
+            this.load.image('bomb', 'assets/dots/Bomb.png');
+            this.load.image('skull', 'assets/dots/GameOver.png');
+            this.load.image('multiplier', 'assets/dots/Multiplier.png');
+            this.load.image('super', 'assets/dots/Super.png');
+
+            // create background image
+            this.load.image('bg', 'assets/background.png');
+
+
+        }
+
+        function create() {
+
+            brickBG = this.add.image(450, 450, 'brick');
+            background = this.add.tileSprite(450, 450, 900, 900, 'bg');
+
+            mainLogo = this.add.image(450, 100, 'logo');
+            playButton = this.add.image(450, 300, 'play');
+            playButton.setInteractive();
+            playButton.on('pointerdown', onPlayClick)
+            shopButton = this.add.image(450, 500, 'shop');
+
+            music = this.sound.add('theme', { loop: true });
+            fullSong = this.sound.add('main');
+
+            music.play();
+
+            var countdown = 0;
+
+            scoreText = this.add.text(16, 16, ' ', { fontSize: '20px', fill: '#000' });
+
+            // Count down
+            cdText = this.add.text(450, 450, ' ', { fontSize: '150px', fill: '#000' });
+            cdText.setOrigin(0.5, 0.5);
+
+
+            scene = this; // so we can place dots outside of create()            
+
+        }
+        
+        function test() {
+            let i = 0;
+            setInterval(() => {
+                if (i < 200) {
+                    var x = Phaser.Math.Between(50, 850);
+                    var y = Phaser.Math.Between(80, 850);
+
+                    var chooseDot = Phaser.Math.Between(0, 7); // 8 types of dots
+                    switch (chooseDot) {
+                        case 0:
+                            var blue1Dot = scene.add.image(x, y, 'blue1').setVisible(true).setInteractive().on('pointerdown', function () {
+                                blue1Dot.destroy();
+                                scoreText.setText('Score: ' + score++);
+                            });
+                            break;
+                        case 1:
+                            var blue2Dot = scene.add.image(x, y, 'blue2').setVisible(true).setInteractive().on('pointerdown', function () {
+                                blue2Dot.destroy();
+                                scoreText.setText('Score: ' + score++);
+                            });
+                            break;
+                        case 2:
+                            var blue3Dot = scene.add.image(x, y, 'blue3').setVisible(true).setInteractive().on('pointerdown', function () {
+                                blue3Dot.destroy();
+                                scoreText.setText('Score: ' + score++);
+
+                            });
+                            break;
+                        case 3:
+                            var blue4Dot = scene.add.image(x, y, 'blue4').setVisible(true).setInteractive().on('pointerdown', function () {
+
+                                blue4Dot.destroy();
+                                scoreText.setText('Score: ' + score++);
+
+
+                            });
+                            break;
+                        case 4:
+                            var bombDot = scene.add.image(x, y, 'bomb').setVisible(true).setInteractive().on('pointerdown', function () {
+                                bombDot.destroy();
+                                scoreText.setText('Score: ' + score++);
+
+                            });
+                            break;
+                        case 5:
+                            var skullDot = scene.add.image(x, y, 'skull').setVisible(true).setInteractive().on('pointerdown', function () {
+                                skullDot.destroy();
+                                scoreText.setText('Score: ' + score++);
+
+                            });
+                            break;
+                        case 6:
+                            var multiplierDot = scene.add.image(x, y, 'multiplier').setVisible(true).setInteractive().on('pointerdown', function () {
+                                multiplierDot.destroy();
+                                scoreText.setText('Score: ' + score++);
+
+                            });
+                            break;
+                        case 7:
+                            var superDot = scene.add.image(x, y, 'super').setVisible(true).setInteractive().on('pointerdown', function () {
+                                superDot.destroy();
+                                scoreText.setText('Score: ' + score++);
+
+                            });
+                            break;
+                    }
+                    i++;
+                }
+            }, 1000); // place a dot every 1000ms (i.e. every second)
+
+        }
+        function update() {
+            // Add game logic and interactivity here
+            background.tilePositionX += 0.5;
+
+
+
+        }
+
+        function countdown() {
+            for (let i = 5; i >= -1; i--) {
+                setTimeout(function () {
+                    if (i === 0)
+                        cdText.setText('GO!');
+                    else if (i === -1)
+                        cdText.setText('');
+                    else
+                        cdText.setText(i);
+                }, (5 - i) * 1000);
+            }
+            return;
+        }
+
+        function placeDot() {
+            setInterval(function () {
+                console.log('Second:' + second);
+                second++;
+            }, 1000);
+
+
+        }
+
+        function onPlayClick() {
+
+            console.log('play button clicked');
+            mainLogo.destroy();
+            shopButton.destroy();
+            playButton.destroy();
+            background.destroy();
+
+            scoreText.setText('Score: ' + score);
+
+            // begin game
+            music.stop();
+            fullSong.play();
+
+            // 5 second countdown 
+            countdown();
+            placeDot();
+            test();
+        }
+
+        function onStoreClick() {
+
+            // opens up a store where the player can customize the game for in-game currency
+            console.log('Shop clicked!');
+        }
+    </script>
+
+</body>
+
+</html>
