@@ -17,3 +17,7 @@ The game ends after the time runs out, and your final score will be displayed.
 Game design: I learned the basics of designing a simple game that is fun and challenging.
 Game mechanics: I learned how to create a scoring system, a timer, and a way to track user input.
 JavaScript programming: I improved my JavaScript skills by working with Phaser and creating interactive elements.
+
+## Screenshots
+![image](https://user-images.githubusercontent.com/34982031/220815427-f31c0e58-36ea-4a9a-94b9-3bb864ffddb4.png)
+![image](https://user-images.githubusercontent.com/34982031/220815447-5ba8c822-984c-4ec4-b4d6-74bf4f3fd4f7.png)
