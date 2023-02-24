@@ -7,8 +7,15 @@ SHOP:
 
 TODO:
 	Make custom background with all the different dots and is seamless
-	Add spinning and shrinking animation upon being clicked
+	Add animations upon dots being clicked
 	Add difficulty levels (higher rewards for higher difficulty)	
 	Increased dots during songs intense part. (intense gameplay when intense music)
 	Change probability levels of dots
 	Change hitboxes of dots to be circles instead of squares
+	Special effects upon clicks:	
+		Make lighting bolts appear when multiplier clicked
+		Make blue burst appear for blue1-4
+		Make angry symbol appear when bomb clicked
+		Make gameover animation when skull clicked
+	Add highscores
+	Indicate when multiplier is active		
