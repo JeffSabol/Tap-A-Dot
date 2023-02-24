@@ -2,11 +2,23 @@
 Tap-A-Dot is a simple game built with Phaser and http-server that challenges you to tap as many dots as you can in a limited amount of time. This game was my first attempt at developing a game using Phaser, and it was a fun and educational experience. As of 2/22/2023 I am not finished yet and I still have a bunch of planned ideas.
 
 ## How to Play 
+
+Go to your directory included the game files
+
 First install http-server via npm by running:
+
 `npm install --global http-server`
-In a web browser by navigating to http://localhost:8080/
+
+Then run:
+
+`http-server`
+
+In a web browser nagivate to http://localhost:8080/
+
 Click the "Play Now" button to start the game.
-Tap the dots as quickly as possible to score points while avoiding bad dots (skull and bombs).
+
+Tap the dots as quickly as possible to score points while avoiding bad dots (skull and bomb).
+
 The game ends after the time runs out, and your final score will be displayed.
 
 ## Technologies Used
