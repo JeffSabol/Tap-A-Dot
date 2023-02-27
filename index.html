@@ -49,8 +49,8 @@
             this.load.image('play', 'assets/PlayNow.png');
             this.load.image('shop', 'assets/ShopNow.png');
             this.load.image('brick', 'assets/brickbg.png');
-            this.load.audio('theme', 'assets/loop.mp3');
-            this.load.audio('main', 'assets/song.mp3');
+            this.load.audio('theme', 'assets/music/loop.mp3');
+            this.load.audio('main', 'assets/music/song.mp3');
 
             // Dots
             this.load.image('blue1', 'assets/dots/Blue1.png');
@@ -73,7 +73,17 @@
             brickBG = this.add.image(450, 450, 'brick');
             background = this.add.tileSprite(1793, 450, 3585, 900, 'bg');
 
-            mainLogo = this.add.image(450, 100, 'logo');
+            mainLogo = this.add.image(450, 125, 'logo');
+
+            this.tweens.add({
+                targets: mainLogo,
+                scaleX: 1.075,
+                scaleY: 1.075,
+                duration: 900, // grow over the course of 3 seconds
+                yoyo: true, // repeat the tween in reverse
+                repeat: -1, // repeat the tween indefinitely
+            });
+
             playButton = this.add.image(450, 300, 'play');
             playButton.setInteractive();
             playButton.on('pointerdown', onPlayClick)
@@ -178,7 +188,7 @@
                             case 4:
                                 var bombDot = scene.add.image(x, y, 'bomb').setVisible(true).setInteractive().on('pointerdown', function () {
                                     bombDot.destroy();
-                                    if (multiplierClickTime > 0){
+                                    if (multiplierClickTime > 0) {
                                         score -= 10 * multiplierValue;
                                         scoreText.setText('Score: ' + score);
                                     }
