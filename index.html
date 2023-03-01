@@ -31,7 +31,6 @@
             }
         };
 
-        var blue1;
         var score = 0;
         var scoreText;
         var cdText;
@@ -43,12 +42,19 @@
         var startGame = false;
         var second = 0;
         var dotInterval;
+        var multiplierClicked = false;
+        var multiplierClickTime = 0;
+        var multiplierValue = 3;
 
         function preload() {
+
+            // Main Mmnu items
             this.load.image('logo', 'assets/Logo.png');
             this.load.image('play', 'assets/PlayNow.png');
             this.load.image('shop', 'assets/ShopNow.png');
-            this.load.image('brick', 'assets/brickbg.png');
+
+
+            // Audio
             this.load.audio('theme', 'assets/music/loop.mp3');
             this.load.audio('main', 'assets/music/song.mp3');
 
@@ -62,9 +68,16 @@
             this.load.image('multiplier', 'assets/dots/Multiplier.png');
             this.load.image('super', 'assets/dots/Super.png');
 
-            // create background image
-            this.load.image('bg', 'assets/background.png');
+            // Dot pop effects
+            this.load.image('bluepop', 'assets/dots/pops/BluePop.png');
+            this.load.image('redpop', 'assets/dots/pops/RedPop.png');
+            this.load.image('steam', 'assets/dots/pops/Steam.png');
+            this.load.image('zaps', 'assets/dots/pops/Zaps.png');
+            this.load.image('explosion', 'assets/dots/pops/Explosion.png');
 
+            // Background
+            this.load.image('brick', 'assets/brickbg.png');
+            this.load.image('bg', 'assets/background.png');
 
         }
 
@@ -74,42 +87,33 @@
             background = this.add.tileSprite(1793, 450, 3585, 900, 'bg');
 
             mainLogo = this.add.image(450, 125, 'logo');
-
             this.tweens.add({
                 targets: mainLogo,
                 scaleX: 1.075,
                 scaleY: 1.075,
-                duration: 900, // grow over the course of 3 seconds
-                yoyo: true, // repeat the tween in reverse
-                repeat: -1, // repeat the tween indefinitely
+                duration: 900,
+                yoyo: true,
+                repeat: -1,
             });
 
             playButton = this.add.image(450, 300, 'play');
             playButton.setInteractive();
             playButton.on('pointerdown', onPlayClick)
+
             shopButton = this.add.image(450, 500, 'shop');
 
+            // Audio
             music = this.sound.add('theme', { loop: true });
             fullSong = this.sound.add('main');
-
             music.play();
 
-            var countdown = 0;
-
+            // Countdown
             scoreText = this.add.text(16, 16, ' ', { fontSize: '20px', fill: '#000' });
-
-            // Count down
             cdText = this.add.text(450, 450, ' ', { fontSize: '150px', fill: '#000' });
             cdText.setOrigin(0.5, 0.5);
 
-
-            scene = this; // so we can place dots outside of create()            
-
+            scene = this; // so we can place dots outside of create()        
         }
-
-        var multiplierClicked = false;
-        var multiplierClickTime = 0;
-        var multiplierValue = 3;
 
         function placeDots() {
             let i = 0;
@@ -118,18 +122,14 @@
                     if (i < 99) {
                         var x = Phaser.Math.Between(50, 850);
                         var y = Phaser.Math.Between(80, 850);
-
                         var chooseDot = Phaser.Math.Between(0, 7); // 8 types of dots
+                        
                         switch (chooseDot) {
                             case 0:
                                 var blue1Dot = scene.add.image(x, y, 'blue1').setVisible(true).setInteractive().on('pointerdown', function () {
                                     blue1Dot.destroy();
-                                    if (multiplierClickTime > 0) {
-                                        score += 1 * multiplierValue;
-                                        scoreText.setText('Score: ' + score);
-                                    }
-                                    else
-                                        scoreText.setText('Score: ' + score++);
+                                    createBluePop(x, y);
+                                    multiplierBlueScoring();
                                 });
                                 setTimeout(function () {
                                     if (!blue1Dot.isDestroyed) {
@@ -140,12 +140,8 @@
                             case 1:
                                 var blue2Dot = scene.add.image(x, y, 'blue2').setVisible(true).setInteractive().on('pointerdown', function () {
                                     blue2Dot.destroy();
-                                    if (multiplierClickTime > 0) {
-                                        score += 1 * multiplierValue;
-                                        scoreText.setText('Score: ' + score);
-                                    }
-                                    else
-                                        scoreText.setText('Score: ' + score++);
+                                    createBluePop(x, y);
+                                    multiplierBlueScoring();
                                 });
                                 setTimeout(function () {
                                     if (!blue2Dot.isDestroyed) {
@@ -156,12 +152,8 @@
                             case 2:
                                 var blue3Dot = scene.add.image(x, y, 'blue3').setVisible(true).setInteractive().on('pointerdown', function () {
                                     blue3Dot.destroy();
-                                    if (multiplierClickTime > 0) {
-                                        score += 1 * multiplierValue;
-                                        scoreText.setText('Score: ' + score);
-                                    }
-                                    else
-                                        scoreText.setText('Score: ' + score++);
+                                    createBluePop(x, y);
+                                    multiplierBlueScoring();
                                 });
                                 setTimeout(function () {
                                     if (!blue3Dot.isDestroyed) {
@@ -172,12 +164,8 @@
                             case 3:
                                 var blue4Dot = scene.add.image(x, y, 'blue4').setVisible(true).setInteractive().on('pointerdown', function () {
                                     blue4Dot.destroy();
-                                    if (multiplierClickTime > 0) {
-                                        score += 1 * multiplierValue;
-                                        scoreText.setText('Score: ' + score);
-                                    }
-                                    else
-                                        scoreText.setText('Score: ' + score++);
+                                    createBluePop(x, y);
+                                    multiplierBlueScoring();
                                 });
                                 setTimeout(function () {
                                     if (!blue4Dot.isDestroyed) {
@@ -188,6 +176,7 @@
                             case 4:
                                 var bombDot = scene.add.image(x, y, 'bomb').setVisible(true).setInteractive().on('pointerdown', function () {
                                     bombDot.destroy();
+                                    createExplosion(x, y);
                                     if (multiplierClickTime > 0) {
                                         score -= 10 * multiplierValue;
                                         scoreText.setText('Score: ' + score);
@@ -219,11 +208,11 @@
                                 var multiplierDot = scene.add.image(x, y, 'multiplier').setVisible(true).setInteractive().on('pointerdown', function () {
                                     multiplierDot.destroy();
                                     multiplierClicked = true;
+                                    createZap(x, y);
                                     if (multiplierClickTime > 0)
                                         multiplierClickTime += 5;
                                     else
                                         multiplierClickTime = 5;
-                                    scoreText.setText('Score: ' + score);
                                 });
                                 setTimeout(function () {
                                     if (!multiplierDot.isDestroyed) {
@@ -234,6 +223,7 @@
                             case 7:
                                 var superDot = scene.add.image(x, y, 'super').setVisible(true).setInteractive().on('pointerdown', function () {
                                     superDot.destroy();
+                                    createRedPop(x, y);
                                     if (multiplierClickTime > 0) {
                                         score += 5 * multiplierValue;
                                         scoreText.setText('Score: ' + score);
@@ -257,7 +247,6 @@
             }, 6000); // wait 6 seconds before placing dots
         }
 
-
         function update() {
             // Add game logic and interactivity here
             background.tilePositionX += 0.5;
@@ -278,6 +267,16 @@
             return;
         }
 
+        function multiplierBlueScoring() {
+            if (multiplierClickTime > 0) {
+                score += 1 * multiplierValue;
+                scoreText.setText('Score: ' + score);
+            }
+            else
+                scoreText.setText('Score: ' + ++score);
+
+        }
+
         function onPlayClick() {
 
             console.log('play button clicked');
@@ -296,6 +295,81 @@
             countdown();
             placeDots();
         }
+
+        function createExplosion(x, y) {
+            // i don't like how it's a different art style!
+            var boomed = scene.add.image(x, y, 'explosion').setVisible(true);
+            boomed.setScale(0.1); // set initial scale to be small
+            var randomAngle = Phaser.Math.Between(-180, 180);
+            scene.tweens.add({
+                targets: boomed,
+                angle: randomAngle,
+                rotation: Phaser.Math.DegToRad(-30),
+                scaleX: 0.75,
+                scaleY: 0.75,
+                duration: 300,
+                onComplete: function () {
+                    if (!boomed.isDestroyed) {
+                        boomed.destroy();
+                    }
+                }
+            });
+        }
+
+        function createZap(x, y) {
+            var zapped = scene.add.image(x, y, 'zaps').setVisible(true);
+            zapped.setScale(0.5); // set initial scale to be small
+            scene.tweens.add({
+                targets: zapped,
+                rotation: Phaser.Math.DegToRad(-30),
+                duration: 300,
+                ease: 'Sine.easeInOut',
+                yoyo: true,
+                onComplete: function () {
+                    if (!zapped.isDestroyed) {
+                        zapped.destroy();
+                    }
+                }
+            });
+        }
+
+        function createRedPop(x, y) {
+            var redPop = scene.add.image(x, y, 'redpop').setVisible(true);
+            redPop.setScale(0.1); // set initial scale to be small
+            var randomAngle = Phaser.Math.Between(-180, 180);
+            scene.tweens.add({
+                targets: redPop,
+                angle: randomAngle,
+                scaleX: 0.75,
+                scaleY: 0.75,
+                duration: 400,
+                onComplete: function () {
+                    if (!redPop.isDestroyed) {
+                        redPop.destroy();
+                    }
+                }
+            });
+
+        }
+
+        function createBluePop(x, y) {
+            var bluePop = scene.add.image(x, y, 'bluepop').setVisible(true);
+            bluePop.setScale(0.1); // set initial scale to be small
+            var randomAngle = Phaser.Math.Between(-180, 180);
+            scene.tweens.add({
+                targets: bluePop,
+                angle: randomAngle,
+                scaleX: 0.75,
+                scaleY: 0.75,
+                duration: 400,
+                onComplete: function () {
+                    if (!bluePop.isDestroyed) {
+                        bluePop.destroy();
+                    }
+                }
+            });
+        }
+
 
         function onStoreClick() {
 
