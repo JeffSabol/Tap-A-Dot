@@ -34,6 +34,7 @@
         var score = 0;
         var scoreText;
         var cdText;
+        var highScoreText;
         var bg;
         var playButton;
         var game = new Phaser.Game(config);
@@ -45,14 +46,18 @@
         var multiplierClicked = false;
         var multiplierClickTime = 0;
         var multiplierValue = 3;
+        var localStorageName = 'test';
+        var highScore = 0;
 
         function preload() {
 
-            // Main Mmnu items
+            // Main Menu items
             this.load.image('logo', 'assets/Logo.png');
             this.load.image('play', 'assets/PlayNow.png');
             this.load.image('shop', 'assets/ShopNow.png');
 
+            this.load.image('highscore', 'assets/HighScore.png');
+            this.load.image('home', 'assets/Home.png');
 
             // Audio
             this.load.audio('theme', 'assets/music/loop.mp3');
@@ -112,10 +117,15 @@
             cdText = this.add.text(450, 450, ' ', { fontSize: '150px', fill: '#000' });
             cdText.setOrigin(0.5, 0.5);
 
+            highScoreTable = this.add.image(450, 450, 'highscore').setVisible(false);
+            highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
+
+
+
             scene = this; // so we can place dots outside of create()        
         }
 
-        function placeDots() {
+        function placeDots(resolve) {
             let i = 0;
             setTimeout(function () {
                 dotInterval = setInterval(function () {
@@ -123,7 +133,7 @@
                         var x = Phaser.Math.Between(50, 850);
                         var y = Phaser.Math.Between(80, 850);
                         var chooseDot = Phaser.Math.Between(0, 7); // 8 types of dots
-                        
+
                         switch (chooseDot) {
                             case 0:
                                 var blue1Dot = scene.add.image(x, y, 'blue1').setVisible(true).setInteractive().on('pointerdown', function () {
@@ -243,6 +253,9 @@
                         i++;
                         multiplierClickTime--;
                     }
+                    else {
+                        resolve();
+                    }
                 }, 1000); // place a dot every 1000ms (i.e. every second)
             }, 6000); // wait 6 seconds before placing dots
         }
@@ -278,12 +291,16 @@
         }
 
         function onPlayClick() {
-
-            console.log('play button clicked');
-            mainLogo.destroy();
-            shopButton.destroy();
-            playButton.destroy();
-            background.destroy();
+            mainLogo.setVisible(false);
+            shopButton.setVisible(false);
+            playButton.setVisible(false);
+            background.setVisible(false);
+            scoreText.setVisible(true);
+            score=0;
+            // mainLogo.destroy();
+            // shopButton.destroy();
+            // playButton.destroy();
+            // background.destroy();
 
             scoreText.setText('Score: ' + score);
 
@@ -291,9 +308,15 @@
             music.stop();
             fullSong.play();
 
-            // 5 second countdown 
             countdown();
-            placeDots();
+            // placeDots();
+            new Promise(function (resolve) {
+                placeDots(resolve);
+            }).then(function () {
+                placeHighScore();
+            });
+
+
         }
 
         function createExplosion(x, y) {
@@ -370,11 +393,33 @@
             });
         }
 
+        function placeHighScore() {
+            highScore = localStorage.getItem(localStorageName) == null ? 0 : localStorage.getItem(localStorageName);
+
+            // update high score
+            highScore = Math.max(score, highScore);
+            localStorage.setItem(localStorageName, highScore);
+
+            highScoreTable.setVisible(true);
+            highScoreText.setOrigin(0.5).setText(highScore).setVisible(true);
+            var goHome = scene.add.image(450, 650, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', function () {
+                console.log('use hit go home!');
+                fullSong.stop();
+                music.play();
+                mainLogo.setVisible(true);
+                shopButton.setVisible(true);
+                playButton.setVisible(true);
+                background.setVisible(true);
+                highScoreTable.setVisible(false);
+                highScoreText.setVisible(false);
+                scoreText.setVisible(false);
+                goHome.destroy();
+            });
+
+        }
 
         function onStoreClick() {
 
-            // opens up a store where the player can customize the game for in-game currency
-            console.log('Shop clicked!');
         }
     </script>
 
