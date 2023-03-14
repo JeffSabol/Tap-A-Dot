@@ -35,7 +35,7 @@
         var scoreText;
         var countdownText;
         var highScoreText;
-        var coinCountText;
+        var coinRewardText;
         var bg;
         var playButton;
         var game = new Phaser.Game(config);
@@ -125,7 +125,7 @@
 
             highScoreTable = this.add.image(450, 450, 'highscore').setVisible(false);
             highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
-            coinCountText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
+            coinRewardText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
 
 
             scene = this; // so we can place dots outside of create()        
@@ -407,7 +407,7 @@
 
             highScoreTable.setVisible(true);
             highScoreText.setOrigin(0.5).setText('Highscore: ' + highScore).setVisible(true);
-            coinCountText.setOrigin(0.5).setText('Coins earned: ' + coins).setVisible(true);
+            coinRewardText.setOrigin(0.5).setText('Coins earned: ' + coins).setVisible(true);
             var goHome = scene.add.image(450, 650, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', function () {
                 console.log('use hit go home!');
                 fullSong.stop();
@@ -418,6 +418,7 @@
                 background.setVisible(true);
                 highScoreTable.setVisible(false);
                 highScoreText.setVisible(false);
+                coinRewardText.setVisible(false);
                 coinText.setVisible(true);
                 scoreText.setVisible(false);
                 multiplierClickTime = 0;
