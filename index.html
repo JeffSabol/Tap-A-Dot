@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+-<!DOCTYPE html>
 <html>
 
 <head>
@@ -33,8 +33,9 @@
 
         var score = 0;
         var scoreText;
-        var cdText;
+        var countdownText;
         var highScoreText;
+        var coinCountText;
         var bg;
         var playButton;
         var game = new Phaser.Game(config);
@@ -46,8 +47,11 @@
         var multiplierClicked = false;
         var multiplierClickTime = 0;
         var multiplierValue = 3;
-        var localStorageName = 'test';
+        var localStorageName = 'Highscore';
         var highScore = 0;
+        var localStorageCoins = 'Total Coins';
+        var coinBag = 0;
+        var coins = 0;
 
         function preload() {
 
@@ -113,13 +117,15 @@
             music.play();
 
             // Countdown
-            scoreText = this.add.text(16, 16, ' ', { fontSize: '20px', fill: '#000' });
-            cdText = this.add.text(450, 450, ' ', { fontSize: '150px', fill: '#000' });
-            cdText.setOrigin(0.5, 0.5);
+            scoreText = this.add.text(16, 16, ' ', { fontSize: '20px', fill: '#000', stroke: '#fff', strokeThickness: 4 });
+            coinText = this.add.text(16, 16, 'Coins: ' + coinBag, { fontSize: '25px', fill: '#000', stroke: '#fff', strokeThickness: 4 });
+
+            countdownText = this.add.text(450, 450, ' ', { fontSize: '150px', fill: '#000' });
+            countdownText.setOrigin(0.5, 0.5);
 
             highScoreTable = this.add.image(450, 450, 'highscore').setVisible(false);
             highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
-
+            coinCountText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
 
 
             scene = this; // so we can place dots outside of create()        
@@ -192,7 +198,10 @@
                                         scoreText.setText('Score: ' + score);
                                     }
                                     else {
-                                        score -= 10;
+                                        if (score - 10 > 0)
+                                            score -= 10;
+                                        else
+                                            score = 0;
                                         scoreText.setText('Score: ' + score);
                                     }
                                 });
@@ -270,11 +279,11 @@
             for (let i = 5; i >= -1; i--) {
                 setTimeout(function () {
                     if (i === 0)
-                        cdText.setText('GO!');
+                        countdownText.setText('GO!');
                     else if (i === -1)
-                        cdText.setText('');
+                        countdownText.setText('');
                     else
-                        cdText.setText(i);
+                        countdownText.setText(i);
                 }, (5 - i) * 1000);
             }
             return;
@@ -295,24 +304,21 @@
             shopButton.setVisible(false);
             playButton.setVisible(false);
             background.setVisible(false);
-            scoreText.setVisible(true);
-            score=0;
-            // mainLogo.destroy();
-            // shopButton.destroy();
-            // playButton.destroy();
-            // background.destroy();
-
+            score = 0;
+            coins = 0;
+            coinText.setVisible(false);
             scoreText.setText('Score: ' + score);
+            scoreText.setVisible(true);
 
             // begin game
             music.stop();
             fullSong.play();
 
             countdown();
-            // placeDots();
             new Promise(function (resolve) {
                 placeDots(resolve);
             }).then(function () {
+                giveCoins();
                 placeHighScore();
             });
 
@@ -320,7 +326,6 @@
         }
 
         function createExplosion(x, y) {
-            // i don't like how it's a different art style!
             var boomed = scene.add.image(x, y, 'explosion').setVisible(true);
             boomed.setScale(0.1); // set initial scale to be small
             var randomAngle = Phaser.Math.Between(-180, 180);
@@ -393,7 +398,7 @@
             });
         }
 
-        function placeHighScore() {
+        function placeHighScore() { // rename to include placing of coins earned
             highScore = localStorage.getItem(localStorageName) == null ? 0 : localStorage.getItem(localStorageName);
 
             // update high score
@@ -401,7 +406,8 @@
             localStorage.setItem(localStorageName, highScore);
 
             highScoreTable.setVisible(true);
-            highScoreText.setOrigin(0.5).setText(highScore).setVisible(true);
+            highScoreText.setOrigin(0.5).setText('Highscore: ' + highScore).setVisible(true);
+            coinCountText.setOrigin(0.5).setText('Coins earned: ' + coins).setVisible(true);
             var goHome = scene.add.image(450, 650, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', function () {
                 console.log('use hit go home!');
                 fullSong.stop();
@@ -412,7 +418,9 @@
                 background.setVisible(true);
                 highScoreTable.setVisible(false);
                 highScoreText.setVisible(false);
+                coinText.setVisible(true);
                 scoreText.setVisible(false);
+                multiplierClickTime = 0;
                 goHome.destroy();
             });
 
@@ -420,6 +428,18 @@
 
         function onStoreClick() {
 
+        }
+
+        function giveCoins() {
+
+
+            // give coins
+            coins += Phaser.Math.FloorTo(score / 10);
+            coinBag = localStorage.getItem(localStorageCoins) == null ? 0 : parseInt(localStorage.getItem(localStorageCoins));
+            localStorage.setItem(localStorageCoins, coinBag + coins);
+
+            console.log('Coins rewarded: ' + coins);
+            console.log('Total coins: ' + coinBag);
         }
     </script>
 
