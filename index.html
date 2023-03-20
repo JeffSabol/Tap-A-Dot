@@ -1,4 +1,5 @@
--<!DOCTYPE html>
+-
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -41,6 +42,7 @@
         var game = new Phaser.Game(config);
         var music;
         var fullSong;
+        var shopSong;
         var startGame = false;
         var second = 0;
         var dotInterval;
@@ -60,12 +62,20 @@
             this.load.image('play', 'assets/PlayNow.png');
             this.load.image('shop', 'assets/ShopNow.png');
 
+            // Shop
+            this.load.image('shopMenu', 'assets/Shop.png');
+            this.load.image('songItem', '/assets/SongItem.png');
+            this.load.image('skinItem', '/assets/SkinItem.png');
+            this.load.image('backgroundItem', '/assets/BackgroundItem.png');
+
+            // High Score
             this.load.image('highscore', 'assets/HighScore.png');
             this.load.image('home', 'assets/Home.png');
 
             // Audio
             this.load.audio('theme', 'assets/music/loop.mp3');
             this.load.audio('main', 'assets/music/song.mp3');
+            this.load.audio('shopTune', 'assets/music/ShopMusic.mp3');
 
             // Dots
             this.load.image('blue1', 'assets/dots/Blue1.png');
@@ -107,12 +117,16 @@
 
             playButton = this.add.image(450, 300, 'play');
             playButton.setInteractive();
-            playButton.on('pointerdown', onPlayClick)
+            playButton.on('pointerdown', onPlayClick);
 
+            // Shop
             shopButton = this.add.image(450, 500, 'shop');
+            shopButton.setInteractive();
+            shopButton.on('pointerdown', onStoreClick);
 
             // Audio
             music = this.sound.add('theme', { loop: true });
+            shopSong = this.sound.add('shopTune', { loop: true });
             fullSong = this.sound.add('main');
             music.play();
 
@@ -127,6 +141,7 @@
             highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
             coinRewardText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
 
+            shopBackground = this.add.image(450, 450, 'shopMenu').setVisible(false);
 
             scene = this; // so we can place dots outside of create()        
         }
@@ -409,7 +424,6 @@
             highScoreText.setOrigin(0.5).setText('Highscore: ' + highScore).setVisible(true);
             coinRewardText.setOrigin(0.5).setText('Coins earned: ' + coins).setVisible(true);
             var goHome = scene.add.image(450, 650, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', function () {
-                console.log('use hit go home!');
                 fullSong.stop();
                 music.play();
                 mainLogo.setVisible(true);
@@ -428,7 +442,41 @@
         }
 
         function onStoreClick() {
+            shopBackground.setScale(1.25).setVisible(true);
+            music.stop();   
+            shopSong.play();
 
+            var song1 = scene.add.image(150, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                // update storage of item being owned
+            });
+
+            var skin1 = scene.add.image(300, 350, 'skinItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                // update storage of item being owned
+            });
+
+            var background1 = scene.add.image(450, 350, 'backgroundItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                // update storage of item being owned
+            });
+
+            var song2 = scene.add.image(600, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                // update storage of item being owned
+            });
+
+            var song3 = scene.add.image(750, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                // update storage of item being owned
+            });
+
+            var goHome = scene.add.image(450, 725, 'home').setVisible(true).setInteractive().on('pointerdown', function () {
+                shopBackground.setVisible(false);
+                goHome.destroy();
+                skin1.destroy();
+                song2.destroy();
+                song3.destroy();
+                song1.destroy();
+                background1.destroy();
+                shopSong.stop();
+                music.play();
+            });
         }
 
         function giveCoins() {

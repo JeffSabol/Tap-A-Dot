@@ -4,12 +4,20 @@ TapADot is pronounced similar to PolkaDot.
 SHOP:
 	Unlock different dot skins (smiley faces).
 	Unlock different backgrounds
+	
 
 TODO:
-	Make custom background with all the different dots and is seamless
-	Add difficulty levels (higher rewards for higher difficulty)	
-	Increased dots during songs intense part. (intense gameplay when intense music)
+	Change difficult per song.
+	Add difficulty levels to songs in shop
+	Intense gameplay when intense music
+	Add image effects to the background image using convolution matrices on beat
 	Change hitboxes of dots to be circles instead of squares
 	Indicate when multiplier is active		
 	Fix bomb giving negative points (too mean)
 	Don't give negative coins!
+	Change song items in the shop to have the background of the track
+	FIX modern browser audio/video security bug:
+		Make a game start button button or menu so that the audio is played upon starting the game
+	Add a listen to with headphones image with a tween 
+	Organize:
+		Fix names of variables, functions, files, ETC
