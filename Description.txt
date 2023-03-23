@@ -19,5 +19,11 @@ TODO:
 	FIX modern browser audio/video security bug:
 		Make a game start button button or menu so that the audio is played upon starting the game
 	Add a listen to with headphones image with a tween 
+	Use 1 font to prevent different fonts per OS (noticing a difference on POP_OS vs Windows 10)
+	Decide if I want to remove the 1 line breaking the seamless scroll or if it looks cool as a new comic page
+	FIX loop on shop music
+	Add a dark color when buttons are being pressed to indicate selection
+	Change loop song to be currently equipped song
+
 	Organize:
 		Fix names of variables, functions, files, ETC

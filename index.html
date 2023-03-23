@@ -1,14 +1,500 @@
--
 <!DOCTYPE html>
 <html>
 
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser-arcade-physics.min.js"></script>
 </head>
 
 <body>
 
     <script>
+
+        class Boot extends Phaser.Scene {
+            constructor() {
+                super('Boot');
+            }
+
+            create() {
+                //  Do any stuff you need before loading, such as setting global registry entries, etc
+                this.registry.set('highscore', 0);
+
+
+                this.scene.start('Preloader');
+            }
+        }
+
+        class Preloader extends Phaser.Scene {
+            constructor() {
+                super('Preloader');
+            }
+
+            preload() {
+                // load all of your assets
+
+                // Main Menu items
+                this.load.image('logo', 'assets/Logo.png');
+                this.load.image('play', 'assets/PlayNow.png');
+                this.load.image('shop', 'assets/ShopNow.png');
+
+                // Shop
+                this.load.image('shopLogo', 'assets/Shop.png');
+                this.load.image('songItem', '/assets/SongItem.png');
+                this.load.image('skinItem', '/assets/SkinItem.png');
+                this.load.image('backgroundItem', '/assets/BackgroundItem.png');
+
+                // High Score
+                this.load.image('highscore', 'assets/HighScore.png');
+                this.load.image('home', 'assets/Home.png');
+
+                // Audio
+                this.load.audio('theme', 'assets/music/loop.mp3');
+                this.load.audio('main', 'assets/music/song.mp3');
+                this.load.audio('shopTune', 'assets/music/ShopMusic.mp3');
+
+                // Dots
+                this.load.image('blue1', 'assets/dots/Blue1.png');
+                this.load.image('blue2', 'assets/dots/Blue2.png');
+                this.load.image('blue3', 'assets/dots/Blue3.png');
+                this.load.image('blue4', 'assets/dots/Blue4.png');
+                this.load.image('bomb', 'assets/dots/Bomb.png');
+                this.load.image('skull', 'assets/dots/GameOver.png');
+                this.load.image('multiplier', 'assets/dots/Multiplier.png');
+                this.load.image('super', 'assets/dots/Super.png');
+
+                // Dot pop effects
+                this.load.image('bluepop', 'assets/dots/pops/BluePop.png');
+                this.load.image('redpop', 'assets/dots/pops/RedPop.png');
+                this.load.image('steam', 'assets/dots/pops/Steam.png');
+                this.load.image('zaps', 'assets/dots/pops/Zaps.png');
+                this.load.image('explosion', 'assets/dots/pops/Explosion.png');
+
+                // Background
+                this.load.image('brick', 'assets/brickbg.png');
+                this.load.image('bg', 'assets/background.png');
+                this.load.image('shopbg', 'assets/dotsBackground.png');
+            }
+
+            create() {
+                this.scene.start('MainMenu');
+            }
+        }
+
+        class MainMenu extends Phaser.Scene {
+            constructor() {
+                super('MainMenu');
+                this.background;
+            }
+
+            create() {
+                //  Add background, logo, buttons, etc
+                this.background = this.add.tileSprite(1793, 450, 3585, 900, 'bg');
+
+
+                var mainLogo = this.add.image(450, 125, 'logo');
+                this.tweens.add({
+                    targets: mainLogo,
+                    scaleX: 1.075,
+                    scaleY: 1.075,
+                    duration: 900,
+                    yoyo: true,
+                    repeat: -1,
+                });
+
+                var coinText = this.add.text(16, 16, 'Coins: ' + coinBag, { fontSize: '25px', fill: '#000', stroke: '#fff', strokeThickness: 4 });
+
+
+                // Menu music
+                var music = this.sound.add('theme', { loop: true });
+                music.play();
+
+
+                // Main game
+                var playButton = this.add.image(450, 300, 'play');
+                playButton.setInteractive();
+                playButton.on('pointerdown', function () {
+                    music.stop();
+                    this.scene.start('MainGame');
+                }, this);
+
+
+                // Shop
+                var shopButton = this.add.image(450, 500, 'shop');
+                shopButton.setInteractive();
+                shopButton.on('pointerdown', () => {
+                    console.log('user clicked open shop!');
+                    music.stop();
+                    this.scene.start('ShopMenu');
+                }, this);
+            }
+
+            update() {
+                // scrolls our background image
+                this.background.tilePositionX += 0.5;
+            }
+        }
+
+        class MainGame extends Phaser.Scene {
+            constructor() {
+                super('MainGame');
+                this.scoreText = null;
+                this.score = 0;
+                this.highScoreTable = null;
+                this.highScoreText = null;
+                this.coinRewardText = null;
+                this.fullSong = null;
+            }
+
+            create() {
+                this.score = 0;
+
+                var multiplierClickTime = 0;
+
+                var brickBG = this.add.image(450, 450, 'brick');
+
+
+                this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '20px', fill: '#000', stroke: '#fff', strokeThickness: 4 });
+
+                var countdownText = this.add.text(450, 450, ' ', { fontSize: '150px', fill: '#000' }).setOrigin(0.5, 0.5);
+
+                this.highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
+                this.highScoreTable = this.add.image(450, 450, 'highscore').setVisible(false);
+                this.coinRewardText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
+
+                this.fullSong = this.sound.add('main');
+                this.fullSong.play();
+
+                this.countdown(countdownText); // first do a 5 second countdown
+                new Promise((resolve) => {
+                    this.placeDots(resolve); // then we place dots
+                }).then(() => { // last we reward the player based on their score
+                    this.giveCoins(this.score);
+                    this.placeHighScore(this.score); // returns to main menu scene inside here
+                });
+            }
+
+            placeDots(resolve) {
+                let i = 0;
+                setTimeout(() => {
+                    dotInterval = setInterval(() => {
+                        if (i < 99) {
+                            var x = Phaser.Math.Between(50, 850);
+                            var y = Phaser.Math.Between(80, 850);
+                            var chooseDot = Phaser.Math.Between(0, 7); // 8 types of dots
+
+                            switch (chooseDot) {
+                                case 0:
+                                    var blue1Dot = this.add.image(x, y, 'blue1').setVisible(true).setInteractive().on('pointerdown', () => {
+                                        blue1Dot.destroy();
+                                        this.createBluePop(x, y);
+                                        this.multiplierBlueScoring();
+                                    });
+                                    setTimeout(() => {
+                                        if (!blue1Dot.isDestroyed) {
+                                            blue1Dot.destroy();
+                                        }
+                                    }, 1000);
+                                    break;
+                                case 1:
+                                    var blue2Dot = this.add.image(x, y, 'blue2').setVisible(true).setInteractive().on('pointerdown', () => {
+                                        blue2Dot.destroy();
+                                        this.createBluePop(x, y);
+                                        this.multiplierBlueScoring();
+                                    });
+                                    setTimeout(() => {
+                                        if (!blue2Dot.isDestroyed) {
+                                            blue2Dot.destroy();
+                                        }
+                                    }, 1000);
+                                    break;
+                                case 2:
+                                    var blue3Dot = this.add.image(x, y, 'blue3').setVisible(true).setInteractive().on('pointerdown', () => {
+                                        blue3Dot.destroy();
+                                        this.createBluePop(x, y);
+                                        this.multiplierBlueScoring();
+                                    });
+                                    setTimeout(() => {
+                                        if (!blue3Dot.isDestroyed) {
+                                            blue3Dot.destroy();
+                                        }
+                                    }, 1000);
+                                    break;
+                                case 3:
+                                    var blue4Dot = this.add.image(x, y, 'blue4').setVisible(true).setInteractive().on('pointerdown', () => {
+                                        blue4Dot.destroy();
+                                        this.createBluePop(x, y);
+                                        this.multiplierBlueScoring();
+                                    });
+                                    setTimeout(function () {
+                                        if (!blue4Dot.isDestroyed) {
+                                            blue4Dot.destroy();
+                                        }
+                                    }, 1000);
+                                    break;
+                                case 4:
+                                    var bombDot = this.add.image(x, y, 'bomb').setVisible(true).setInteractive().on('pointerdown', () => {
+                                        bombDot.destroy();
+                                        this.createExplosion(x, y);
+                                        if (this.multiplierClickTime > 0) {
+                                            if (this.score - 30 > 0)
+                                                this.score -= 10 * 3;
+                                            else
+                                                this.score = 0;
+                                            this.scoreText.setText('Score: ' + this.score);
+                                        }
+                                        else {
+                                            if (this.score - 10 > 0)
+                                                this.score -= 10;
+                                            else
+                                                this.score = 0;
+                                            this.scoreText.setText('Score: ' + this.score);
+                                        }
+                                    });
+                                    setTimeout(function () {
+                                        if (!bombDot.isDestroyed) {
+                                            bombDot.destroy();
+                                        }
+                                    }, 1000);
+                                    break;
+                                case 5:
+                                    var skullDot = this.add.image(x, y, 'skull').setVisible(true).setInteractive().on('pointerdown', () => {
+                                        skullDot.destroy();
+                                        i = 200;
+                                        // TODO add end game popup and button to bring back main menu
+                                    });
+                                    setTimeout(function () {
+                                        if (!skullDot.isDestroyed) {
+                                            skullDot.destroy();
+                                        }
+                                    }, 1000);
+                                    break;
+                                case 6:
+                                    var multiplierDot = this.add.image(x, y, 'multiplier').setVisible(true).setInteractive().on('pointerdown', () => {
+                                        multiplierDot.destroy();
+                                        this.multiplierClicked = true;
+                                        this.createZap(x, y);
+                                        if (this.multiplierClickTime > 0)
+                                            this.multiplierClickTime += 5;
+                                        else
+                                            this.multiplierClickTime = 5;
+                                    });
+                                    setTimeout(function () {
+                                        if (!multiplierDot.isDestroyed) {
+                                            multiplierDot.destroy();
+                                        }
+                                    }, 1000);
+                                    break;
+                                case 7:
+                                    var superDot = this.add.image(x, y, 'super').setVisible(true).setInteractive().on('pointerdown', () => {
+                                        superDot.destroy();
+                                        this.createRedPop(x, y);
+                                        if (this.multiplierClickTime > 0) {
+                                            this.score += 5 * 3;
+                                            this.scoreText.setText('Score: ' + this.score);
+                                        }
+                                        else {
+                                            this.score += 5;
+                                            this.scoreText.setText('Score: ' + this.score);
+                                        }
+                                    });
+                                    setTimeout(function () {
+                                        if (!superDot.isDestroyed) {
+                                            superDot.destroy();
+                                        }
+                                    }, 500);
+                                    break;
+                            }
+                            i++;
+                            this.multiplierClickTime--;
+                        }
+                        else {
+                            resolve();
+                        }
+                    }, 1000); // place a dot every 1000ms (i.e. every second)
+                }, 6000); // wait 6 seconds before placing dots
+            }
+
+            createExplosion(x, y) {
+                var boomed = this.add.image(x, y, 'explosion').setVisible(true);
+                boomed.setScale(0.1); // set initial scale to be small
+                var randomAngle = Phaser.Math.Between(-180, 180);
+                this.tweens.add({
+                    targets: boomed,
+                    angle: randomAngle,
+                    rotation: Phaser.Math.DegToRad(-30),
+                    scaleX: 0.75,
+                    scaleY: 0.75,
+                    duration: 300,
+                    onComplete: function () {
+                        if (!boomed.isDestroyed) {
+                            boomed.destroy();
+                        }
+                    }
+                });
+            }
+
+            createZap(x, y) {
+                var zapped = this.add.image(x, y, 'zaps').setVisible(true);
+                zapped.setScale(0.5); // set initial scale to be small
+                this.tweens.add({
+                    targets: zapped,
+                    rotation: Phaser.Math.DegToRad(-30),
+                    duration: 300,
+                    ease: 'Sine.easeInOut',
+                    yoyo: true,
+                    onComplete: function () {
+                        if (!zapped.isDestroyed) {
+                            zapped.destroy();
+                        }
+                    }
+                });
+            }
+
+            createRedPop(x, y) {
+                var redPop = this.add.image(x, y, 'redpop').setVisible(true);
+                redPop.setScale(0.1); // set initial scale to be small
+                var randomAngle = Phaser.Math.Between(-180, 180);
+                this.tweens.add({
+                    targets: redPop,
+                    angle: randomAngle,
+                    scaleX: 0.75,
+                    scaleY: 0.75,
+                    duration: 400,
+                    onComplete: function () {
+                        if (!redPop.isDestroyed) {
+                            redPop.destroy();
+                        }
+                    }
+                });
+
+            }
+
+            createBluePop(x, y) {
+                var bluePop = this.add.image(x, y, 'bluepop').setVisible(true);
+                bluePop.setScale(0.1); // set initial scale to be small
+                var randomAngle = Phaser.Math.Between(-180, 180);
+                this.tweens.add({
+                    targets: bluePop,
+                    angle: randomAngle,
+                    scaleX: 0.75,
+                    scaleY: 0.75,
+                    duration: 400,
+                    onComplete: function () {
+                        if (!bluePop.isDestroyed) {
+                            bluePop.destroy();
+                        }
+                    }
+                });
+            }
+
+            giveCoins(score) {
+
+
+                // give coins
+                coins += Phaser.Math.FloorTo(this.score / 10);
+                // TODO fix local storage
+                coinBag = localStorage.getItem(localStorageCoins) == null ? 0 : parseInt(localStorage.getItem(localStorageCoins));
+                localStorage.setItem(localStorageCoins, coinBag + coins);
+
+                console.log('Coins rewarded: ' + coins);
+                console.log('Total coins: ' + coinBag);
+            }
+
+            placeHighScore(score) { // rename to include placing of coins earned
+                highScore = localStorage.getItem(localStorageName) == null ? 0 : localStorage.getItem(localStorageName);
+
+                // update high score
+                highScore = Math.max(this.score, highScore);
+                localStorage.setItem(localStorageName, highScore);
+
+                this.highScoreTable.setVisible(true);
+                this.highScoreText.setOrigin(0.5).setText('Highscore: ' + highScore).setVisible(true);
+                this.coinRewardText.setOrigin(0.5).setText('Coins earned: ' + coins).setVisible(true);
+                var goHome = this.add.image(450, 650, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', () => {
+                    this.fullSong.stop();
+                    this.scene.start("MainMenu");
+                });
+
+            }
+
+            multiplierBlueScoring() {
+                if (this.multiplierClickTime > 0) {
+                    this.score += 1 * 3;
+                    this.scoreText.setText('Score: ' + this.score);
+                }
+                else
+                    this.scoreText.setText('Score: ' + ++this.score);
+
+            }
+
+            countdown(countdownText) {
+                for (let i = 5; i >= -1; i--) {
+                    setTimeout(() => {
+                        if (i === 0)
+                            countdownText.setText('GO!');
+                        else if (i === -1)
+                            countdownText.setText('');
+                        else
+                            countdownText.setText(i);
+                    }, (5 - i) * 1000);
+                }
+            }
+        }
+
+        class ShopMenu extends Phaser.Scene {
+            constructor() {
+                super('ShopMenu');
+                this.background;
+                this.shopMusic = null;
+            }
+
+            create() {
+
+                this.background = this.add.tileSprite(1793, 450, 3585, 900, 'shopbg');
+
+                this.shopMusic = this.sound.add('shopTune', { loop: true });
+                this.shopMusic.play();
+
+                const graphics = this.add.graphics();
+
+                graphics.lineStyle(15, 0x000000, 1);
+
+                graphics.fillStyle(0x174c31, 1);
+                graphics.fillRoundedRect(450 - 400, 450 - 400, 800, 800, 10);
+                graphics.strokeRoundedRect(450 - 400, 450 - 400, 800, 800, 10);
+
+                const highscoreLogo = this.add.image(450, 250, 'shopLogo');
+                highscoreLogo.setScale(0.65);
+
+                var song1 = this.add.image(150, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                    // update storage of item being owned
+                });
+
+                var skin1 = this.add.image(300, 350, 'skinItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                    // update storage of item being owned
+                });
+
+                var background1 = this.add.image(450, 350, 'backgroundItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                    // update storage of item being owned
+                });
+
+                var song2 = this.add.image(600, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                    // update storage of item being owned
+                });
+
+                var song3 = this.add.image(750, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                    // update storage of item being owned
+                });
+
+                var goHome = this.add.image(450, 750, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', () => {
+                    this.shopMusic.stop();
+                    this.scene.start("MainMenu");
+                });
+            }
+            update() {
+                this.background.tilePositionX += 0.5;
+            }
+        }
+
         var config = {
             type: Phaser.AUTO,
             width: 900,
@@ -22,474 +508,27 @@
                     debug: true
                 }
             },
-            scene: {
-                preload: preload,
-                create: create,
-                update: update
-            },
+            scene: [Boot, Preloader, MainMenu, MainGame, ShopMenu],
             audio: {
                 disableWebAudio: true
             }
         };
 
-        var score = 0;
-        var scoreText;
-        var countdownText;
-        var highScoreText;
-        var coinRewardText;
         var bg;
         var playButton;
         var game = new Phaser.Game(config);
         var music;
-        var fullSong;
         var shopSong;
         var startGame = false;
         var second = 0;
         var dotInterval;
         var multiplierClicked = false;
-        var multiplierClickTime = 0;
-        var multiplierValue = 3;
-        var localStorageName = 'Highscore';
         var highScore = 0;
+        var localStorageName = 'Highscore';
         var localStorageCoins = 'Total Coins';
         var coinBag = 0;
         var coins = 0;
 
-        function preload() {
-
-            // Main Menu items
-            this.load.image('logo', 'assets/Logo.png');
-            this.load.image('play', 'assets/PlayNow.png');
-            this.load.image('shop', 'assets/ShopNow.png');
-
-            // Shop
-            this.load.image('shopMenu', 'assets/Shop.png');
-            this.load.image('songItem', '/assets/SongItem.png');
-            this.load.image('skinItem', '/assets/SkinItem.png');
-            this.load.image('backgroundItem', '/assets/BackgroundItem.png');
-
-            // High Score
-            this.load.image('highscore', 'assets/HighScore.png');
-            this.load.image('home', 'assets/Home.png');
-
-            // Audio
-            this.load.audio('theme', 'assets/music/loop.mp3');
-            this.load.audio('main', 'assets/music/song.mp3');
-            this.load.audio('shopTune', 'assets/music/ShopMusic.mp3');
-
-            // Dots
-            this.load.image('blue1', 'assets/dots/Blue1.png');
-            this.load.image('blue2', 'assets/dots/Blue2.png');
-            this.load.image('blue3', 'assets/dots/Blue3.png');
-            this.load.image('blue4', 'assets/dots/Blue4.png');
-            this.load.image('bomb', 'assets/dots/Bomb.png');
-            this.load.image('skull', 'assets/dots/GameOver.png');
-            this.load.image('multiplier', 'assets/dots/Multiplier.png');
-            this.load.image('super', 'assets/dots/Super.png');
-
-            // Dot pop effects
-            this.load.image('bluepop', 'assets/dots/pops/BluePop.png');
-            this.load.image('redpop', 'assets/dots/pops/RedPop.png');
-            this.load.image('steam', 'assets/dots/pops/Steam.png');
-            this.load.image('zaps', 'assets/dots/pops/Zaps.png');
-            this.load.image('explosion', 'assets/dots/pops/Explosion.png');
-
-            // Background
-            this.load.image('brick', 'assets/brickbg.png');
-            this.load.image('bg', 'assets/background.png');
-
-        }
-
-        function create() {
-
-            brickBG = this.add.image(450, 450, 'brick');
-            background = this.add.tileSprite(1793, 450, 3585, 900, 'bg');
-
-            mainLogo = this.add.image(450, 125, 'logo');
-            this.tweens.add({
-                targets: mainLogo,
-                scaleX: 1.075,
-                scaleY: 1.075,
-                duration: 900,
-                yoyo: true,
-                repeat: -1,
-            });
-
-            playButton = this.add.image(450, 300, 'play');
-            playButton.setInteractive();
-            playButton.on('pointerdown', onPlayClick);
-
-            // Shop
-            shopButton = this.add.image(450, 500, 'shop');
-            shopButton.setInteractive();
-            shopButton.on('pointerdown', onStoreClick);
-
-            // Audio
-            music = this.sound.add('theme', { loop: true });
-            shopSong = this.sound.add('shopTune', { loop: true });
-            fullSong = this.sound.add('main');
-            music.play();
-
-            // Countdown
-            scoreText = this.add.text(16, 16, ' ', { fontSize: '20px', fill: '#000', stroke: '#fff', strokeThickness: 4 });
-            coinText = this.add.text(16, 16, 'Coins: ' + coinBag, { fontSize: '25px', fill: '#000', stroke: '#fff', strokeThickness: 4 });
-
-            countdownText = this.add.text(450, 450, ' ', { fontSize: '150px', fill: '#000' });
-            countdownText.setOrigin(0.5, 0.5);
-
-            highScoreTable = this.add.image(450, 450, 'highscore').setVisible(false);
-            highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
-            coinRewardText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
-
-            shopBackground = this.add.image(450, 450, 'shopMenu').setVisible(false);
-
-            scene = this; // so we can place dots outside of create()        
-        }
-
-        function placeDots(resolve) {
-            let i = 0;
-            setTimeout(function () {
-                dotInterval = setInterval(function () {
-                    if (i < 99) {
-                        var x = Phaser.Math.Between(50, 850);
-                        var y = Phaser.Math.Between(80, 850);
-                        var chooseDot = Phaser.Math.Between(0, 7); // 8 types of dots
-
-                        switch (chooseDot) {
-                            case 0:
-                                var blue1Dot = scene.add.image(x, y, 'blue1').setVisible(true).setInteractive().on('pointerdown', function () {
-                                    blue1Dot.destroy();
-                                    createBluePop(x, y);
-                                    multiplierBlueScoring();
-                                });
-                                setTimeout(function () {
-                                    if (!blue1Dot.isDestroyed) {
-                                        blue1Dot.destroy();
-                                    }
-                                }, 1000);
-                                break;
-                            case 1:
-                                var blue2Dot = scene.add.image(x, y, 'blue2').setVisible(true).setInteractive().on('pointerdown', function () {
-                                    blue2Dot.destroy();
-                                    createBluePop(x, y);
-                                    multiplierBlueScoring();
-                                });
-                                setTimeout(function () {
-                                    if (!blue2Dot.isDestroyed) {
-                                        blue2Dot.destroy();
-                                    }
-                                }, 1000);
-                                break;
-                            case 2:
-                                var blue3Dot = scene.add.image(x, y, 'blue3').setVisible(true).setInteractive().on('pointerdown', function () {
-                                    blue3Dot.destroy();
-                                    createBluePop(x, y);
-                                    multiplierBlueScoring();
-                                });
-                                setTimeout(function () {
-                                    if (!blue3Dot.isDestroyed) {
-                                        blue3Dot.destroy();
-                                    }
-                                }, 1000);
-                                break;
-                            case 3:
-                                var blue4Dot = scene.add.image(x, y, 'blue4').setVisible(true).setInteractive().on('pointerdown', function () {
-                                    blue4Dot.destroy();
-                                    createBluePop(x, y);
-                                    multiplierBlueScoring();
-                                });
-                                setTimeout(function () {
-                                    if (!blue4Dot.isDestroyed) {
-                                        blue4Dot.destroy();
-                                    }
-                                }, 1000);
-                                break;
-                            case 4:
-                                var bombDot = scene.add.image(x, y, 'bomb').setVisible(true).setInteractive().on('pointerdown', function () {
-                                    bombDot.destroy();
-                                    createExplosion(x, y);
-                                    if (multiplierClickTime > 0) {
-                                        score -= 10 * multiplierValue;
-                                        scoreText.setText('Score: ' + score);
-                                    }
-                                    else {
-                                        if (score - 10 > 0)
-                                            score -= 10;
-                                        else
-                                            score = 0;
-                                        scoreText.setText('Score: ' + score);
-                                    }
-                                });
-                                setTimeout(function () {
-                                    if (!bombDot.isDestroyed) {
-                                        bombDot.destroy();
-                                    }
-                                }, 1000);
-                                break;
-                            case 5:
-                                var skullDot = scene.add.image(x, y, 'skull').setVisible(true).setInteractive().on('pointerdown', function () {
-                                    skullDot.destroy();
-                                    i = 200;
-                                    // TODO add end game popup and button to bring back main menu
-                                });
-                                setTimeout(function () {
-                                    if (!skullDot.isDestroyed) {
-                                        skullDot.destroy();
-                                    }
-                                }, 1000);
-                                break;
-                            case 6:
-                                var multiplierDot = scene.add.image(x, y, 'multiplier').setVisible(true).setInteractive().on('pointerdown', function () {
-                                    multiplierDot.destroy();
-                                    multiplierClicked = true;
-                                    createZap(x, y);
-                                    if (multiplierClickTime > 0)
-                                        multiplierClickTime += 5;
-                                    else
-                                        multiplierClickTime = 5;
-                                });
-                                setTimeout(function () {
-                                    if (!multiplierDot.isDestroyed) {
-                                        multiplierDot.destroy();
-                                    }
-                                }, 1000);
-                                break;
-                            case 7:
-                                var superDot = scene.add.image(x, y, 'super').setVisible(true).setInteractive().on('pointerdown', function () {
-                                    superDot.destroy();
-                                    createRedPop(x, y);
-                                    if (multiplierClickTime > 0) {
-                                        score += 5 * multiplierValue;
-                                        scoreText.setText('Score: ' + score);
-                                    }
-                                    else {
-                                        score += 5;
-                                        scoreText.setText('Score: ' + score);
-                                    }
-                                });
-                                setTimeout(function () {
-                                    if (!superDot.isDestroyed) {
-                                        superDot.destroy();
-                                    }
-                                }, 500);
-                                break;
-                        }
-                        i++;
-                        multiplierClickTime--;
-                    }
-                    else {
-                        resolve();
-                    }
-                }, 1000); // place a dot every 1000ms (i.e. every second)
-            }, 6000); // wait 6 seconds before placing dots
-        }
-
-        function update() {
-            // Add game logic and interactivity here
-            background.tilePositionX += 0.5;
-
-        }
-
-        function countdown() {
-            for (let i = 5; i >= -1; i--) {
-                setTimeout(function () {
-                    if (i === 0)
-                        countdownText.setText('GO!');
-                    else if (i === -1)
-                        countdownText.setText('');
-                    else
-                        countdownText.setText(i);
-                }, (5 - i) * 1000);
-            }
-            return;
-        }
-
-        function multiplierBlueScoring() {
-            if (multiplierClickTime > 0) {
-                score += 1 * multiplierValue;
-                scoreText.setText('Score: ' + score);
-            }
-            else
-                scoreText.setText('Score: ' + ++score);
-
-        }
-
-        function onPlayClick() {
-            mainLogo.setVisible(false);
-            shopButton.setVisible(false);
-            playButton.setVisible(false);
-            background.setVisible(false);
-            score = 0;
-            coins = 0;
-            coinText.setVisible(false);
-            scoreText.setText('Score: ' + score);
-            scoreText.setVisible(true);
-
-            // begin game
-            music.stop();
-            fullSong.play();
-
-            countdown();
-            new Promise(function (resolve) {
-                placeDots(resolve);
-            }).then(function () {
-                giveCoins();
-                placeHighScore();
-            });
-
-
-        }
-
-        function createExplosion(x, y) {
-            var boomed = scene.add.image(x, y, 'explosion').setVisible(true);
-            boomed.setScale(0.1); // set initial scale to be small
-            var randomAngle = Phaser.Math.Between(-180, 180);
-            scene.tweens.add({
-                targets: boomed,
-                angle: randomAngle,
-                rotation: Phaser.Math.DegToRad(-30),
-                scaleX: 0.75,
-                scaleY: 0.75,
-                duration: 300,
-                onComplete: function () {
-                    if (!boomed.isDestroyed) {
-                        boomed.destroy();
-                    }
-                }
-            });
-        }
-
-        function createZap(x, y) {
-            var zapped = scene.add.image(x, y, 'zaps').setVisible(true);
-            zapped.setScale(0.5); // set initial scale to be small
-            scene.tweens.add({
-                targets: zapped,
-                rotation: Phaser.Math.DegToRad(-30),
-                duration: 300,
-                ease: 'Sine.easeInOut',
-                yoyo: true,
-                onComplete: function () {
-                    if (!zapped.isDestroyed) {
-                        zapped.destroy();
-                    }
-                }
-            });
-        }
-
-        function createRedPop(x, y) {
-            var redPop = scene.add.image(x, y, 'redpop').setVisible(true);
-            redPop.setScale(0.1); // set initial scale to be small
-            var randomAngle = Phaser.Math.Between(-180, 180);
-            scene.tweens.add({
-                targets: redPop,
-                angle: randomAngle,
-                scaleX: 0.75,
-                scaleY: 0.75,
-                duration: 400,
-                onComplete: function () {
-                    if (!redPop.isDestroyed) {
-                        redPop.destroy();
-                    }
-                }
-            });
-
-        }
-
-        function createBluePop(x, y) {
-            var bluePop = scene.add.image(x, y, 'bluepop').setVisible(true);
-            bluePop.setScale(0.1); // set initial scale to be small
-            var randomAngle = Phaser.Math.Between(-180, 180);
-            scene.tweens.add({
-                targets: bluePop,
-                angle: randomAngle,
-                scaleX: 0.75,
-                scaleY: 0.75,
-                duration: 400,
-                onComplete: function () {
-                    if (!bluePop.isDestroyed) {
-                        bluePop.destroy();
-                    }
-                }
-            });
-        }
-
-        function placeHighScore() { // rename to include placing of coins earned
-            highScore = localStorage.getItem(localStorageName) == null ? 0 : localStorage.getItem(localStorageName);
-
-            // update high score
-            highScore = Math.max(score, highScore);
-            localStorage.setItem(localStorageName, highScore);
-
-            highScoreTable.setVisible(true);
-            highScoreText.setOrigin(0.5).setText('Highscore: ' + highScore).setVisible(true);
-            coinRewardText.setOrigin(0.5).setText('Coins earned: ' + coins).setVisible(true);
-            var goHome = scene.add.image(450, 650, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', function () {
-                fullSong.stop();
-                music.play();
-                mainLogo.setVisible(true);
-                shopButton.setVisible(true);
-                playButton.setVisible(true);
-                background.setVisible(true);
-                highScoreTable.setVisible(false);
-                highScoreText.setVisible(false);
-                coinRewardText.setVisible(false);
-                coinText.setVisible(true);
-                scoreText.setVisible(false);
-                multiplierClickTime = 0;
-                goHome.destroy();
-            });
-
-        }
-
-        function onStoreClick() {
-            shopBackground.setScale(1.25).setVisible(true);
-            music.stop();   
-            shopSong.play();
-
-            var song1 = scene.add.image(150, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                // update storage of item being owned
-            });
-
-            var skin1 = scene.add.image(300, 350, 'skinItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                // update storage of item being owned
-            });
-
-            var background1 = scene.add.image(450, 350, 'backgroundItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                // update storage of item being owned
-            });
-
-            var song2 = scene.add.image(600, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                // update storage of item being owned
-            });
-
-            var song3 = scene.add.image(750, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                // update storage of item being owned
-            });
-
-            var goHome = scene.add.image(450, 725, 'home').setVisible(true).setInteractive().on('pointerdown', function () {
-                shopBackground.setVisible(false);
-                goHome.destroy();
-                skin1.destroy();
-                song2.destroy();
-                song3.destroy();
-                song1.destroy();
-                background1.destroy();
-                shopSong.stop();
-                music.play();
-            });
-        }
-
-        function giveCoins() {
-
-
-            // give coins
-            coins += Phaser.Math.FloorTo(score / 10);
-            coinBag = localStorage.getItem(localStorageCoins) == null ? 0 : parseInt(localStorage.getItem(localStorageCoins));
-            localStorage.setItem(localStorageCoins, coinBag + coins);
-
-            console.log('Coins rewarded: ' + coins);
-            console.log('Total coins: ' + coinBag);
-        }
     </script>
 
 </body>
