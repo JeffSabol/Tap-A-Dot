@@ -24,6 +24,8 @@ TODO:
 	FIX loop on shop music
 	Add a dark color when buttons are being pressed to indicate selection
 	Change loop song to be currently equipped song
+	Change buttons to match the art style
+	Change explosion to match the art style
 
 	Organize:
 		Fix names of variables, functions, files, ETC

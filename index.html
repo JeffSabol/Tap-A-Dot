@@ -17,7 +17,7 @@
             create() {
                 //  Do any stuff you need before loading, such as setting global registry entries, etc
                 this.registry.set('highscore', 0);
-
+                this.registry.set('coinBag', 0);
 
                 this.scene.start('Preloader');
             }
@@ -41,6 +41,8 @@
                 this.load.image('songItem', '/assets/SongItem.png');
                 this.load.image('skinItem', '/assets/SkinItem.png');
                 this.load.image('backgroundItem', '/assets/BackgroundItem.png');
+                this.load.image('coin', '/assets/coin.png');
+                this.load.image('buy', '/assets/Buy.png');
 
                 // High Score
                 this.load.image('highscore', 'assets/HighScore.png');
@@ -100,7 +102,9 @@
                     repeat: -1,
                 });
 
-                var coinText = this.add.text(16, 16, 'Coins: ' + coinBag, { fontSize: '25px', fill: '#000', stroke: '#fff', strokeThickness: 4 });
+                var coins = 0;
+
+                var coinText = this.add.text(16, 16, 'Coins: ' + this.registry.get('coinBag'), { fontSize: '25px', fill: '#000', stroke: '#fff', strokeThickness: 4 });
 
 
                 // Menu music
@@ -147,6 +151,7 @@
             create() {
                 this.score = 0;
 
+                var multiplierClicked = false;
                 var multiplierClickTime = 0;
 
                 var brickBG = this.add.image(450, 450, 'brick');
@@ -156,8 +161,8 @@
 
                 var countdownText = this.add.text(450, 450, ' ', { fontSize: '150px', fill: '#000' }).setOrigin(0.5, 0.5);
 
-                this.highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
                 this.highScoreTable = this.add.image(450, 450, 'highscore').setVisible(false);
+                this.highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
                 this.coinRewardText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
 
                 this.fullSong = this.sound.add('main');
@@ -174,6 +179,7 @@
 
             placeDots(resolve) {
                 let i = 0;
+                this.multiplierClickTime = 0;
                 setTimeout(() => {
                     dotInterval = setInterval(() => {
                         if (i < 99) {
@@ -387,28 +393,20 @@
             }
 
             giveCoins(score) {
-
-
-                // give coins
-                coins += Phaser.Math.FloorTo(this.score / 10);
-                // TODO fix local storage
-                coinBag = localStorage.getItem(localStorageCoins) == null ? 0 : parseInt(localStorage.getItem(localStorageCoins));
-                localStorage.setItem(localStorageCoins, coinBag + coins);
-
-                console.log('Coins rewarded: ' + coins);
-                console.log('Total coins: ' + coinBag);
+                this.coins = Phaser.Math.FloorTo(this.score / 10);
+                this.registry.set('coinBag', this.registry.get('coinBag') + this.coins);
             }
 
             placeHighScore(score) { // rename to include placing of coins earned
-                highScore = localStorage.getItem(localStorageName) == null ? 0 : localStorage.getItem(localStorageName);
+                var highScore = this.registry.get('highscore');
 
                 // update high score
                 highScore = Math.max(this.score, highScore);
-                localStorage.setItem(localStorageName, highScore);
+                this.registry.set('highscore', highScore)
 
                 this.highScoreTable.setVisible(true);
                 this.highScoreText.setOrigin(0.5).setText('Highscore: ' + highScore).setVisible(true);
-                this.coinRewardText.setOrigin(0.5).setText('Coins earned: ' + coins).setVisible(true);
+                this.coinRewardText.setOrigin(0.5).setText('Coins earned: ' + this.coins).setVisible(true);
                 var goHome = this.add.image(450, 650, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', () => {
                     this.fullSong.stop();
                     this.scene.start("MainMenu");
@@ -465,25 +463,51 @@
                 const highscoreLogo = this.add.image(450, 250, 'shopLogo');
                 highscoreLogo.setScale(0.65);
 
+                var buy1 = this.add.image(150, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                    console.log('user bought');
+                });
+
                 var song1 = this.add.image(150, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
                     // update storage of item being owned
+                });
+                var coin1 = this.add.image(150, 450, 'coin').setScale(.125).setVisible(true);
+
+                var buy2 = this.add.image(300, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                    console.log('user bought');
                 });
 
                 var skin1 = this.add.image(300, 350, 'skinItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
                     // update storage of item being owned
                 });
+                var coin2 = this.add.image(300, 450, 'coin').setScale(.125).setVisible(true);
+
+                var buy3 = this.add.image(450, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                    console.log('user bought');
+                });
 
                 var background1 = this.add.image(450, 350, 'backgroundItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
                     // update storage of item being owned
+                });
+                var coin3 = this.add.image(450, 450, 'coin').setScale(.125).setVisible(true);
+
+                var buy3 = this.add.image(600, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                    console.log('user bought');
                 });
 
                 var song2 = this.add.image(600, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
                     // update storage of item being owned
                 });
+                var coin4 = this.add.image(600, 450, 'coin').setScale(.125).setVisible(true);
+
+                var buy3 = this.add.image(750, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                    console.log('user bought');
+                });
 
                 var song3 = this.add.image(750, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
                     // update storage of item being owned
                 });
+
+                var coin4 = this.add.image(750, 450, 'coin').setScale(.125).setVisible(true);
 
                 var goHome = this.add.image(450, 750, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', () => {
                     this.shopMusic.stop();
@@ -514,20 +538,9 @@
             }
         };
 
-        var bg;
-        var playButton;
         var game = new Phaser.Game(config);
-        var music;
-        var shopSong;
-        var startGame = false;
         var second = 0;
         var dotInterval;
-        var multiplierClicked = false;
-        var highScore = 0;
-        var localStorageName = 'Highscore';
-        var localStorageCoins = 'Total Coins';
-        var coinBag = 0;
-        var coins = 0;
 
     </script>
 
