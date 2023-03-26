@@ -18,7 +18,9 @@
                 //  Do any stuff you need before loading, such as setting global registry entries, etc
                 this.registry.set('highscore', 0);
                 this.registry.set('coinBag', 0);
-
+                this.registry.set('song2', false);
+                this.registry.set('song3', false);
+                this.registry.set('song4', false);
                 this.scene.start('Preloader');
             }
         }
@@ -35,6 +37,7 @@
                 this.load.image('logo', 'assets/Logo.png');
                 this.load.image('play', 'assets/PlayNow.png');
                 this.load.image('shop', 'assets/ShopNow.png');
+                this.load.image('useHeadphones', 'assets/ChatBlueHeadphones.png');
 
                 // Shop
                 this.load.image('shopLogo', 'assets/Shop.png');
@@ -52,6 +55,8 @@
                 this.load.audio('theme', 'assets/music/loop.mp3');
                 this.load.audio('main', 'assets/music/song.mp3');
                 this.load.audio('shopTune', 'assets/music/ShopMusic.mp3');
+                this.load.audio('chaching', 'assets/music/chaching.mp3');
+                this.load.audio('pop', 'assets/music/Pop.mp3');
 
                 // Dots
                 this.load.image('blue1', 'assets/dots/Blue1.png');
@@ -111,24 +116,48 @@
                 var music = this.sound.add('theme', { loop: true });
                 music.play();
 
+                var popSound = this.sound.add('pop', { loop: false });
+
 
                 // Main game
-                var playButton = this.add.image(450, 300, 'play');
+                var playButton = this.add.image(250, 375, 'play').setScale(.6);
                 playButton.setInteractive();
                 playButton.on('pointerdown', function () {
                     music.stop();
+                    popSound.play();
                     this.scene.start('MainGame');
                 }, this);
 
 
+                playButton.on('pointerover', function () {
+                    playButton.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                }, this);
+
+                playButton.on('pointerout', function () {
+                    playButton.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                }, this);
+
+
                 // Shop
-                var shopButton = this.add.image(450, 500, 'shop');
+                var shopButton = this.add.image(650, 375, 'shop').setScale(.6);
                 shopButton.setInteractive();
                 shopButton.on('pointerdown', () => {
                     console.log('user clicked open shop!');
                     music.stop();
+                    popSound.play();
                     this.scene.start('ShopMenu');
                 }, this);
+
+                shopButton.on('pointerover', function () {
+                    shopButton.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                }, this);
+
+                shopButton.on('pointerout', function () {
+                    shopButton.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                }, this);
+
+
+                var image = this.add.image(450, 710, 'useHeadphones');
             }
 
             update() {
@@ -452,6 +481,8 @@
                 this.shopMusic = this.sound.add('shopTune', { loop: true });
                 this.shopMusic.play();
 
+                this.buySound = this.sound.add('chaching', { loop: false });
+
                 const graphics = this.add.graphics();
 
                 graphics.lineStyle(15, 0x000000, 1);
@@ -463,16 +494,19 @@
                 const highscoreLogo = this.add.image(450, 250, 'shopLogo');
                 highscoreLogo.setScale(0.65);
 
-                var buy1 = this.add.image(150, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                var buy1 = this.add.image(150, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
                     console.log('user bought');
+                    this.buySound.play();
+                    buy1.setVisible(false);
+                    coin1.setVisible(false);
                 });
 
                 var song1 = this.add.image(150, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                    // update storage of item being owned
+                    // equip item
                 });
                 var coin1 = this.add.image(150, 450, 'coin').setScale(.125).setVisible(true);
 
-                var buy2 = this.add.image(300, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                var buy2 = this.add.image(300, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
                     console.log('user bought');
                 });
 
@@ -481,7 +515,7 @@
                 });
                 var coin2 = this.add.image(300, 450, 'coin').setScale(.125).setVisible(true);
 
-                var buy3 = this.add.image(450, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                var buy3 = this.add.image(450, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
                     console.log('user bought');
                 });
 
@@ -490,7 +524,7 @@
                 });
                 var coin3 = this.add.image(450, 450, 'coin').setScale(.125).setVisible(true);
 
-                var buy3 = this.add.image(600, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                var buy4 = this.add.image(600, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
                     console.log('user bought');
                 });
 
@@ -499,7 +533,7 @@
                 });
                 var coin4 = this.add.image(600, 450, 'coin').setScale(.125).setVisible(true);
 
-                var buy3 = this.add.image(750, 265, 'buy').setScale(.1).setVisible(true).setInteractive().on('pointerdown', function () {
+                var buy5 = this.add.image(750, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
                     console.log('user bought');
                 });
 
@@ -516,6 +550,10 @@
             }
             update() {
                 this.background.tilePositionX += 0.5;
+            }
+
+            buyItem(item) {
+
             }
         }
 
