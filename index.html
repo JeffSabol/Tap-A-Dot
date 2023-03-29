@@ -17,10 +17,9 @@
             create() {
                 //  Do any stuff you need before loading, such as setting global registry entries, etc
                 this.registry.set('highscore', 0);
-                this.registry.set('coinBag', 0);
-                this.registry.set('song2', false);
-                this.registry.set('song3', false);
-                this.registry.set('song4', false);
+                this.registry.set('coinBag', 100); // 100 only for testing purposes
+                this.registry.set('ownedSongs', ['default'])
+                this.registry.set('equippedSong', 'default')
                 this.scene.start('Preloader');
             }
         }
@@ -46,6 +45,7 @@
                 this.load.image('backgroundItem', '/assets/BackgroundItem.png');
                 this.load.image('coin', '/assets/coin.png');
                 this.load.image('buy', '/assets/Buy.png');
+                this.load.image('clickToEquip', 'assets/ClickToEquip.png');
 
                 // High Score
                 this.load.image('highscore', 'assets/HighScore.png');
@@ -57,6 +57,9 @@
                 this.load.audio('shopTune', 'assets/music/ShopMusic.mp3');
                 this.load.audio('chaching', 'assets/music/chaching.mp3');
                 this.load.audio('pop', 'assets/music/Pop.mp3');
+                this.load.audio('song1', 'assets/music/butterfly.mp3');
+                this.load.audio('song2', 'assets/music/IDieAlone.mp3');
+                this.load.audio('song3', 'assets/music/HitTheGas.mp3');
 
                 // Dots
                 this.load.image('blue1', 'assets/dots/Blue1.png');
@@ -108,9 +111,6 @@
                 });
 
                 var coins = 0;
-
-                var coinText = this.add.text(16, 16, 'Coins: ' + this.registry.get('coinBag'), { fontSize: '25px', fill: '#000', stroke: '#fff', strokeThickness: 4 });
-
 
                 // Menu music
                 var music = this.sound.add('theme', { loop: true });
@@ -194,9 +194,8 @@
                 this.highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
                 this.coinRewardText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
 
-                this.fullSong = this.sound.add('main');
-                this.fullSong.play();
 
+                this.chooseSong();
                 this.countdown(countdownText); // first do a 5 second countdown
                 new Promise((resolve) => {
                     this.placeDots(resolve); // then we place dots
@@ -204,6 +203,29 @@
                     this.giveCoins(this.score);
                     this.placeHighScore(this.score); // returns to main menu scene inside here
                 });
+            }
+
+            chooseSong = () => {
+                console.log(this.registry.get('equippedSong'));
+
+                switch (this.registry.get('equippedSong')) {
+                    case 'song1':
+                        this.song1 = this.sound.add('song1');
+                        this.song1.play();
+                        break;
+                    case 'song2':
+                        this.song2 = this.sound.add('song2');
+                        this.song2.play();
+                        break;
+                    case 'song3':
+                        this.song3 = this.sound.add('song3');
+                        this.song3.play();
+                        break;
+                    case 'default':
+                        this.fullSong = this.sound.add('main');
+                        this.fullSong.play();
+                        break;
+                }
             }
 
             placeDots(resolve) {
@@ -436,11 +458,22 @@
                 this.highScoreTable.setVisible(true);
                 this.highScoreText.setOrigin(0.5).setText('Highscore: ' + highScore).setVisible(true);
                 this.coinRewardText.setOrigin(0.5).setText('Coins earned: ' + this.coins).setVisible(true);
-                var goHome = this.add.image(450, 650, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', () => {
-                    this.fullSong.stop();
+
+                var popSound = this.sound.add('pop', { loop: false });
+
+                var goHome = this.add.image(450, 650, 'home').setScale(0.9).setVisible(true).setInteractive().on('pointerdown', () => {
+                    game.sound.stopAll();
+                    popSound.play();
                     this.scene.start("MainMenu");
                 });
 
+                goHome.on('pointerover', function () {
+                    goHome.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                }, this);
+
+                goHome.on('pointerout', function () {
+                    goHome.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                }, this);
             }
 
             multiplierBlueScoring() {
@@ -491,62 +524,136 @@
                 graphics.fillRoundedRect(450 - 400, 450 - 400, 800, 800, 10);
                 graphics.strokeRoundedRect(450 - 400, 450 - 400, 800, 800, 10);
 
+                var coinText = this.add.text(75, 730, 'Coins: ' + this.registry.get('coinBag'), { fontSize: '45px', fill: '#FCCB00', stroke: '#FCCB00', strokeThickness: 2 });
+
                 const highscoreLogo = this.add.image(450, 250, 'shopLogo');
                 highscoreLogo.setScale(0.65);
 
-                var buy1 = this.add.image(150, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
-                    console.log('user bought');
-                    this.buySound.play();
-                    buy1.setVisible(false);
-                    coin1.setVisible(false);
+                const ownedSongs = this.registry.get('ownedSongs');
+
+                var popSound = this.sound.add('pop', { loop: false });
+
+                if (!ownedSongs.includes('song1')) {
+                    var buy1 = this.add.image(150, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
+                        if (this.registry.get('coinBag') > 10) {
+                            this.buySound.play();
+                            buy1.setVisible(false);
+                            coin1.setVisible(false);
+                            this.registry.get('ownedSongs').push('song1');
+                            this.registry.set('coinBag', this.registry.get('coinBag') - 10);
+                            coinText.setText('Coins: ' + this.registry.get('coinBag'));
+                        } else {
+                            // alert user insufficient funds!
+                        }
+                    });
+                    var coin1 = this.add.image(150, 450, 'coin').setScale(.125).setVisible(true);
+                }
+                var song1 = this.add.image(150, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
+                    // if owned:
+                    popSound.play();
+                    this.registry.set('equippedSong', 'song1');
+                    // if not owned: play error buzzer sound
                 });
 
-                var song1 = this.add.image(150, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                    // equip item
-                });
-                var coin1 = this.add.image(150, 450, 'coin').setScale(.125).setVisible(true);
+                song1.on('pointerover', function () {
+                    song1.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                }, this);
 
-                var buy2 = this.add.image(300, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
-                    console.log('user bought');
+                song1.on('pointerout', function () {
+                    song1.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                }, this);
+
+
+                if (!ownedSongs.includes('song2')) {
+                    var buy2 = this.add.image(300, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
+                        if (this.registry.get('coinBag') > 10) {
+                            this.buySound.play();
+                            buy2.setVisible(false);
+                            coin2.setVisible(false);
+                            this.registry.get('ownedSongs').push('song2');
+                            this.registry.set('coinBag', this.registry.get('coinBag') - 10);
+                            coinText.setText('Coins: ' + this.registry.get('coinBag'));
+                        } else {
+                            // alert user insufficient funds!
+                        }
+                    });
+                    var coin2 = this.add.image(300, 450, 'coin').setScale(.125).setVisible(true);
+                }
+                var song2 = this.add.image(300, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
+                    this.registry.set('equippedSong', 'song2');
                 });
 
-                var skin1 = this.add.image(300, 350, 'skinItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                song2.on('pointerover', function () {
+                    song2.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                }, this);
+
+                song2.on('pointerout', function () {
+                    song2.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                }, this);
+
+                if (!ownedSongs.includes('song3')) {
+                    var buy3 = this.add.image(450, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
+                        if (this.registry.get('coinBag') > 10) {
+                            this.buySound.play();
+                            buy3.setVisible(false);
+                            coin3.setVisible(false);
+                            this.registry.get('ownedSongs').push('song3');
+                            this.registry.set('coinBag', this.registry.get('coinBag') - 10);
+                            coinText.setText('Coins: ' + this.registry.get('coinBag'));
+                        } else {
+                            // alert user insufficient funds!
+                        }
+                    });
+                    var coin3 = this.add.image(450, 450, 'coin').setScale(.125).setVisible(true);
+                }
+                var song3 = this.add.image(450, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
+                    this.registry.set('equippedSong', 'song3');
+                });
+
+                song3.on('pointerover', function () {
+                    song3.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                }, this);
+
+                song3.on('pointerout', function () {
+                    song3.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                }, this);
+
+                var background1 = this.add.image(750, 350, 'backgroundItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
                     // update storage of item being owned
                 });
-                var coin2 = this.add.image(300, 450, 'coin').setScale(.125).setVisible(true);
 
-                var buy3 = this.add.image(450, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
+                var buy4 = this.add.image(600, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
                     console.log('user bought');
-                });
-
-                var background1 = this.add.image(450, 350, 'backgroundItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                    // update storage of item being owned
-                });
-                var coin3 = this.add.image(450, 450, 'coin').setScale(.125).setVisible(true);
-
-                var buy4 = this.add.image(600, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
-                    console.log('user bought');
-                });
-
-                var song2 = this.add.image(600, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                    // update storage of item being owned
                 });
                 var coin4 = this.add.image(600, 450, 'coin').setScale(.125).setVisible(true);
+
+                var skin1 = this.add.image(600, 350, 'skinItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
+                    // update storage of item being owned
+                });
 
                 var buy5 = this.add.image(750, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
                     console.log('user bought');
                 });
+                var coin5 = this.add.image(750, 450, 'coin').setScale(.125).setVisible(true);
 
-                var song3 = this.add.image(750, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                    // update storage of item being owned
-                });
 
-                var coin4 = this.add.image(750, 450, 'coin').setScale(.125).setVisible(true);
+                var clickInfo = this.add.image(675, 675, 'clickToEquip').setScale(0.85).setVisible(true);
 
-                var goHome = this.add.image(450, 750, 'home').setScale(1.25).setVisible(true).setInteractive().on('pointerdown', () => {
+                var goHome = this.add.image(450, 750, 'home').setScale(0.9).setVisible(true).setInteractive().on('pointerdown', () => {
                     this.shopMusic.stop();
+                    popSound.play();
                     this.scene.start("MainMenu");
                 });
+
+                goHome.on('pointerover', function () {
+                    goHome.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                }, this);
+
+                goHome.on('pointerout', function () {
+                    goHome.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                }, this);
+
+
             }
             update() {
                 this.background.tilePositionX += 0.5;

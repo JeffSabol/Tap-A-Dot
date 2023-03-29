@@ -1,25 +1,31 @@
 TapADot is pronounced similar to PolkaDot.
 
-
 SHOP:
 	Unlock different dot skins (smiley faces).
 	Unlock different backgrounds
-	
 
 TODO:
+	Show song name when hovering
 	Change difficult per song.
 	Add difficulty levels to songs in shop
 	Intense gameplay when intense music
 	Add image effects to the background image using convolution matrices on beat
 	Indicate when multiplier is active		
-	Change song items in the shop to have the background of the track
 	FIX modern browser audio/video security bug:
 		Make a game start button button or menu so that the audio is played upon starting the game
 	Add a listen to with headphones image with a tween 
 	Use 1 font to prevent different fonts per OS (noticing a difference on POP_OS vs Windows 10)
 	Decide if I want to remove the 1 line breaking the seamless scroll or if it looks cool as a new comic page
-	FIX loop on shop music
 	Change loop song to be currently equipped song
 
 	Organize:
 		Fix names of variables, functions, files, ETC
+
+	New Skin ideas:
+		Toxic:
+			Bomb = ☣  biohazard symbol , Pop Effect = green sludge
+			Blue 1 = Sick, Pop Effect = puke? (nasty lmao, but idk)
+			Blue 2 = Masked up
+			Blue 3 = 
+			Blue 4 =	
+			Skull = chemical toxic hazard skull
