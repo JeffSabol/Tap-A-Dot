@@ -96,6 +96,7 @@
             }
 
             create() {
+                this.sound.pauseOnBlur = false;
                 //  Add background, logo, buttons, etc
                 this.background = this.add.tileSprite(1793, 450, 3585, 900, 'bg');
 
@@ -115,6 +116,7 @@
                 // Menu music
                 var music = this.sound.add('theme', { loop: true });
                 music.play();
+
 
                 var popSound = this.sound.add('pop', { loop: false });
 
@@ -179,6 +181,7 @@
 
             create() {
                 this.score = 0;
+                this.sound.pauseOnBlur = false;
 
                 var multiplierClicked = false;
                 var multiplierClickTime = 0;
@@ -513,6 +516,7 @@
 
                 this.shopMusic = this.sound.add('shopTune', { loop: true });
                 this.shopMusic.play();
+                this.sound.pauseOnBlur = false;
 
                 this.buySound = this.sound.add('chaching', { loop: false });
 
@@ -546,6 +550,14 @@
                             // alert user insufficient funds!
                         }
                     });
+                    buy1.on('pointerover', function () {
+                        buy1.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    }, this);
+
+                    buy1.on('pointerout', function () {
+                        buy1.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    }, this);
+
                     var coin1 = this.add.image(150, 450, 'coin').setScale(.125).setVisible(true);
                 }
                 var song1 = this.add.image(150, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
@@ -577,6 +589,14 @@
                             // alert user insufficient funds!
                         }
                     });
+                    buy2.on('pointerover', function () {
+                        buy2.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    }, this);
+
+                    buy2.on('pointerout', function () {
+                        buy2.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    }, this);
+
                     var coin2 = this.add.image(300, 450, 'coin').setScale(.125).setVisible(true);
                 }
                 var song2 = this.add.image(300, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
@@ -604,6 +624,14 @@
                             // alert user insufficient funds!
                         }
                     });
+                    buy3.on('pointerover', function () {
+                        buy3.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    }, this);
+
+                    buy3.on('pointerout', function () {
+                        buy3.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    }, this);
+
                     var coin3 = this.add.image(450, 450, 'coin').setScale(.125).setVisible(true);
                 }
                 var song3 = this.add.image(450, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
@@ -611,11 +639,11 @@
                 });
 
                 song3.on('pointerover', function () {
-                    song3.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    song3.setTint(0xCCCCCC);
                 }, this);
 
                 song3.on('pointerout', function () {
-                    song3.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    song3.setTint(0xFFFFFF);
                 }, this);
 
                 var background1 = this.add.image(750, 350, 'backgroundItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
@@ -625,6 +653,14 @@
                 var buy4 = this.add.image(600, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
                     console.log('user bought');
                 });
+                buy4.on('pointerover', function () {
+                    buy4.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                }, this);
+
+                buy4.on('pointerout', function () {
+                    buy4.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                }, this);
+
                 var coin4 = this.add.image(600, 450, 'coin').setScale(.125).setVisible(true);
 
                 var skin1 = this.add.image(600, 350, 'skinItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
@@ -634,6 +670,14 @@
                 var buy5 = this.add.image(750, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
                     console.log('user bought');
                 });
+                buy5.on('pointerover', function () {
+                    buy5.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                }, this);
+
+                buy5.on('pointerout', function () {
+                    buy5.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                }, this);
+
                 var coin5 = this.add.image(750, 450, 'coin').setScale(.125).setVisible(true);
 
 
@@ -680,7 +724,7 @@
             scene: [Boot, Preloader, MainMenu, MainGame, ShopMenu],
             audio: {
                 disableWebAudio: true
-            }
+            },
         };
 
         var game = new Phaser.Game(config);
