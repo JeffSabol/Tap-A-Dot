@@ -5,27 +5,16 @@ SHOP:
 	Unlock different backgrounds
 
 TODO:
+	Add default to reset equipped items in the shop
 	Show song name when hovering
 	Change difficult per song.
-	Add difficulty levels to songs in shop
 	Intense gameplay when intense music
 	Add image effects to the background image using convolution matrices on beat
 	Indicate when multiplier is active		
 	FIX modern browser audio/video security bug:
 		Make a game start button button or menu so that the audio is played upon starting the game
-	Add a listen to with headphones image with a tween 
 	Use 1 font to prevent different fonts per OS (noticing a difference on POP_OS vs Windows 10)
 	Decide if I want to remove the 1 line breaking the seamless scroll or if it looks cool as a new comic page
-	Change loop song to be currently equipped song
 
 	Organize:
 		Fix names of variables, functions, files, ETC
-
-	New Skin ideas:
-		Toxic:
-			Bomb = ☣  biohazard symbol , Pop Effect = green sludge
-			Blue 1 = Sick, Pop Effect = puke? (nasty lmao, but idk)
-			Blue 2 = Masked up
-			Blue 3 = 
-			Blue 4 =	
-			Skull = chemical toxic hazard skull

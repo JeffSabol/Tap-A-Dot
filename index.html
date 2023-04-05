@@ -17,7 +17,7 @@
             create() {
                 //  Do any stuff you need before loading, such as setting global registry entries, etc
                 this.registry.set('highscore', 0);
-                this.registry.set('coinBag', 100); // 100 only for testing purposes
+                this.registry.set('coinBag', 50);
                 this.registry.set('ownedSongs', ['default'])
                 this.registry.set('equippedSong', 'default')
                 this.scene.start('Preloader');
@@ -30,8 +30,6 @@
             }
 
             preload() {
-                // load all of your assets
-
                 // Main Menu items
                 this.load.image('logo', 'assets/Logo.png');
                 this.load.image('play', 'assets/PlayNow.png');
@@ -40,11 +38,11 @@
 
                 // Shop
                 this.load.image('shopLogo', 'assets/Shop.png');
-                this.load.image('songItem', '/assets/SongItem.png');
-                this.load.image('skinItem', '/assets/SkinItem.png');
-                this.load.image('backgroundItem', '/assets/BackgroundItem.png');
-                this.load.image('coin', '/assets/coin.png');
-                this.load.image('buy', '/assets/Buy.png');
+                this.load.image('songItem', 'assets/SongItem.png');
+                this.load.image('skinItem', 'assets/SkinItem.png');
+                this.load.image('backgroundItem', 'assets/BackgroundItem.png');
+                this.load.image('coin', 'assets/coin.png');
+                this.load.image('buy', 'assets/Buy.png');
                 this.load.image('clickToEquip', 'assets/ClickToEquip.png');
 
                 // High Score
@@ -57,9 +55,12 @@
                 this.load.audio('shopTune', 'assets/music/ShopMusic.mp3');
                 this.load.audio('chaching', 'assets/music/chaching.mp3');
                 this.load.audio('pop', 'assets/music/Pop.mp3');
+                this.load.audio('error', 'assets/music/Error.mp3');
                 this.load.audio('song1', 'assets/music/butterfly.mp3');
                 this.load.audio('song2', 'assets/music/IDieAlone.mp3');
                 this.load.audio('song3', 'assets/music/HitTheGas.mp3');
+                this.load.audio('song4', 'assets/music/FreqOut.mp3');
+                this.load.audio('song5', 'assets/music/LEGALIZENUCLEARBOMBS333.mp3');
 
                 // Dots
                 this.load.image('blue1', 'assets/dots/Blue1.png');
@@ -100,7 +101,6 @@
                 //  Add background, logo, buttons, etc
                 this.background = this.add.tileSprite(1793, 450, 3585, 900, 'bg');
 
-
                 var mainLogo = this.add.image(450, 125, 'logo');
                 this.tweens.add({
                     targets: mainLogo,
@@ -120,7 +120,6 @@
 
                 var popSound = this.sound.add('pop', { loop: false });
 
-
                 // Main game
                 var playButton = this.add.image(250, 375, 'play').setScale(.6);
                 playButton.setInteractive();
@@ -132,13 +131,12 @@
 
 
                 playButton.on('pointerover', function () {
-                    playButton.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    playButton.setTint(0xCCCCCC); 
                 }, this);
 
                 playButton.on('pointerout', function () {
-                    playButton.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    playButton.setTint(0xFFFFFF); 
                 }, this);
-
 
                 // Shop
                 var shopButton = this.add.image(650, 375, 'shop').setScale(.6);
@@ -151,11 +149,11 @@
                 }, this);
 
                 shopButton.on('pointerover', function () {
-                    shopButton.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    shopButton.setTint(0xCCCCCC); 
                 }, this);
 
                 shopButton.on('pointerout', function () {
-                    shopButton.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    shopButton.setTint(0xFFFFFF); 
                 }, this);
 
 
@@ -197,7 +195,6 @@
                 this.highScoreText = this.add.text(450, 450, ' ', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
                 this.coinRewardText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
 
-
                 this.chooseSong();
                 this.countdown(countdownText); // first do a 5 second countdown
                 new Promise((resolve) => {
@@ -223,6 +220,14 @@
                     case 'song3':
                         this.song3 = this.sound.add('song3');
                         this.song3.play();
+                        break;
+                    case 'song4':
+                        this.song4 = this.sound.add('song4');
+                        this.song4.play();
+                        break;
+                    case 'song5':
+                        this.song5 = this.sound.add('song5');
+                        this.song5.play();
                         break;
                     case 'default':
                         this.fullSong = this.sound.add('main');
@@ -319,7 +324,6 @@
                                     var skullDot = this.add.image(x, y, 'skull').setVisible(true).setInteractive().on('pointerdown', () => {
                                         skullDot.destroy();
                                         i = 200;
-                                        // TODO add end game popup and button to bring back main menu
                                     });
                                     setTimeout(function () {
                                         if (!skullDot.isDestroyed) {
@@ -375,7 +379,7 @@
 
             createExplosion(x, y) {
                 var boomed = this.add.image(x, y, 'explosion').setVisible(true);
-                boomed.setScale(0.1); // set initial scale to be small
+                boomed.setScale(0.1);
                 var randomAngle = Phaser.Math.Between(-180, 180);
                 this.tweens.add({
                     targets: boomed,
@@ -394,7 +398,7 @@
 
             createZap(x, y) {
                 var zapped = this.add.image(x, y, 'zaps').setVisible(true);
-                zapped.setScale(0.5); // set initial scale to be small
+                zapped.setScale(0.5);
                 this.tweens.add({
                     targets: zapped,
                     rotation: Phaser.Math.DegToRad(-30),
@@ -411,7 +415,7 @@
 
             createRedPop(x, y) {
                 var redPop = this.add.image(x, y, 'redpop').setVisible(true);
-                redPop.setScale(0.1); // set initial scale to be small
+                redPop.setScale(0.1);
                 var randomAngle = Phaser.Math.Between(-180, 180);
                 this.tweens.add({
                     targets: redPop,
@@ -430,7 +434,7 @@
 
             createBluePop(x, y) {
                 var bluePop = this.add.image(x, y, 'bluepop').setVisible(true);
-                bluePop.setScale(0.1); // set initial scale to be small
+                bluePop.setScale(0.1);
                 var randomAngle = Phaser.Math.Between(-180, 180);
                 this.tweens.add({
                     targets: bluePop,
@@ -451,7 +455,7 @@
                 this.registry.set('coinBag', this.registry.get('coinBag') + this.coins);
             }
 
-            placeHighScore(score) { // rename to include placing of coins earned
+            placeHighScore(score) {
                 var highScore = this.registry.get('highscore');
 
                 // update high score
@@ -528,7 +532,7 @@
                 graphics.fillRoundedRect(450 - 400, 450 - 400, 800, 800, 10);
                 graphics.strokeRoundedRect(450 - 400, 450 - 400, 800, 800, 10);
 
-                var coinText = this.add.text(75, 730, 'Coins: ' + this.registry.get('coinBag'), { fontSize: '45px', fill: '#FCCB00', stroke: '#FCCB00', strokeThickness: 2 });
+                var coinText = this.add.text(75, 785, 'Coins: ' + this.registry.get('coinBag'), { fontSize: '45px', fill: '#FCCB00', stroke: '#FCCB00', strokeThickness: 2 });
 
                 const highscoreLogo = this.add.image(450, 250, 'shopLogo');
                 highscoreLogo.setScale(0.65);
@@ -536,10 +540,11 @@
                 const ownedSongs = this.registry.get('ownedSongs');
 
                 var popSound = this.sound.add('pop', { loop: false });
+                var errorSound = this.sound.add('error', { loop: false });
 
                 if (!ownedSongs.includes('song1')) {
                     var buy1 = this.add.image(150, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
-                        if (this.registry.get('coinBag') > 10) {
+                        if (this.registry.get('coinBag') >= 10) {
                             this.buySound.play();
                             buy1.setVisible(false);
                             coin1.setVisible(false);
@@ -547,38 +552,42 @@
                             this.registry.set('coinBag', this.registry.get('coinBag') - 10);
                             coinText.setText('Coins: ' + this.registry.get('coinBag'));
                         } else {
-                            // alert user insufficient funds!
+                            errorSound.play();
                         }
                     });
                     buy1.on('pointerover', function () {
-                        buy1.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                        buy1.setTint(0xCCCCCC);
                     }, this);
 
                     buy1.on('pointerout', function () {
-                        buy1.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                        buy1.setTint(0xFFFFFF);
                     }, this);
 
                     var coin1 = this.add.image(150, 450, 'coin').setScale(.125).setVisible(true);
                 }
                 var song1 = this.add.image(150, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
                     // if owned:
-                    popSound.play();
-                    this.registry.set('equippedSong', 'song1');
-                    // if not owned: play error buzzer sound
+                    if (this.registry.get('ownedSongs').includes('song1')) {
+                        popSound.play();
+                        this.registry.set('equippedSong', 'song1');
+                    }
+                    else {
+                        errorSound.play();
+                    }
                 });
 
                 song1.on('pointerover', function () {
-                    song1.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    song1.setTint(0xCCCCCC);
                 }, this);
 
                 song1.on('pointerout', function () {
-                    song1.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    song1.setTint(0xFFFFFF);
                 }, this);
 
 
                 if (!ownedSongs.includes('song2')) {
                     var buy2 = this.add.image(300, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
-                        if (this.registry.get('coinBag') > 10) {
+                        if (this.registry.get('coinBag') >= 10) {
                             this.buySound.play();
                             buy2.setVisible(false);
                             coin2.setVisible(false);
@@ -586,34 +595,41 @@
                             this.registry.set('coinBag', this.registry.get('coinBag') - 10);
                             coinText.setText('Coins: ' + this.registry.get('coinBag'));
                         } else {
-                            // alert user insufficient funds!
+                            errorSound.play();
                         }
                     });
                     buy2.on('pointerover', function () {
-                        buy2.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                        buy2.setTint(0xCCCCCC);
                     }, this);
 
                     buy2.on('pointerout', function () {
-                        buy2.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                        buy2.setTint(0xFFFFFF);
                     }, this);
 
                     var coin2 = this.add.image(300, 450, 'coin').setScale(.125).setVisible(true);
                 }
+
                 var song2 = this.add.image(300, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
-                    this.registry.set('equippedSong', 'song2');
+                    if (this.registry.get('ownedSongs').includes('song2')) {
+                        popSound.play();
+                        this.registry.set('equippedSong', 'song2');
+                    }
+                    else {
+                        errorSound.play();
+                    }
                 });
 
                 song2.on('pointerover', function () {
-                    song2.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    song2.setTint(0xCCCCCC);
                 }, this);
 
                 song2.on('pointerout', function () {
-                    song2.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    song2.setTint(0xFFFFFF);
                 }, this);
 
                 if (!ownedSongs.includes('song3')) {
                     var buy3 = this.add.image(450, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
-                        if (this.registry.get('coinBag') > 10) {
+                        if (this.registry.get('coinBag') >= 10) {
                             this.buySound.play();
                             buy3.setVisible(false);
                             coin3.setVisible(false);
@@ -621,21 +637,28 @@
                             this.registry.set('coinBag', this.registry.get('coinBag') - 10);
                             coinText.setText('Coins: ' + this.registry.get('coinBag'));
                         } else {
-                            // alert user insufficient funds!
+                            errorSound.play();
                         }
                     });
                     buy3.on('pointerover', function () {
-                        buy3.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                        buy3.setTint(0xCCCCCC);
                     }, this);
 
                     buy3.on('pointerout', function () {
-                        buy3.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                        buy3.setTint(0xFFFFFF);
                     }, this);
 
                     var coin3 = this.add.image(450, 450, 'coin').setScale(.125).setVisible(true);
                 }
                 var song3 = this.add.image(450, 350, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
-                    this.registry.set('equippedSong', 'song3');
+                    if (this.registry.get('ownedSongs').includes('song3')) {
+                        popSound.play();
+                        this.registry.set('equippedSong', 'song3');
+                    }
+                    else {
+                        errorSound.play();
+                    }
+
                 });
 
                 song3.on('pointerover', function () {
@@ -651,14 +674,14 @@
                 });
 
                 var buy4 = this.add.image(600, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
-                    console.log('user bought');
+                    console.log('user bought skin!');
                 });
                 buy4.on('pointerover', function () {
-                    buy4.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    buy4.setTint(0xCCCCCC);
                 }, this);
 
                 buy4.on('pointerout', function () {
-                    buy4.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    buy4.setTint(0xFFFFFF);
                 }, this);
 
                 var coin4 = this.add.image(600, 450, 'coin').setScale(.125).setVisible(true);
@@ -668,17 +691,102 @@
                 });
 
                 var buy5 = this.add.image(750, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
-                    console.log('user bought');
+                    console.log('user bought background');
                 });
                 buy5.on('pointerover', function () {
-                    buy5.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    buy5.setTint(0xCCCCCC);
                 }, this);
 
                 buy5.on('pointerout', function () {
-                    buy5.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    buy5.setTint(0xFFFFFF);
                 }, this);
 
                 var coin5 = this.add.image(750, 450, 'coin').setScale(.125).setVisible(true);
+
+                if (!ownedSongs.includes('song4')) {
+                    var buy6 = this.add.image(150, 530, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
+                        if (this.registry.get('coinBag') >= 10) {
+                            this.buySound.play();
+                            buy6.setVisible(false);
+                            coin6.setVisible(false);
+                            this.registry.get('ownedSongs').push('song4');
+                            this.registry.set('coinBag', this.registry.get('coinBag') - 10);
+                            coinText.setText('Coins: ' + this.registry.get('coinBag'));
+                        } else {
+                            errorSound.play();
+                        }
+                    });
+                    buy6.on('pointerover', function () {
+                        buy6.setTint(0xCCCCCC);
+                    }, this);
+
+                    buy6.on('pointerout', function () {
+                        buy6.setTint(0xFFFFFF);
+                    }, this);
+                    var coin6 = this.add.image(150, 715, 'coin').setScale(.125).setVisible(true);
+
+                }
+
+                var song4 = this.add.image(150, 615, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
+                    if (this.registry.get('ownedSongs').includes('song4')) {
+                        popSound.play();
+                        this.registry.set('equippedSong', 'song4');
+                    }
+                    else {
+                        errorSound.play();
+                    }
+                });
+
+                song4.on('pointerover', function () {
+                    song4.setTint(0xCCCCCC);
+                }, this);
+
+                song4.on('pointerout', function () {
+                    song4.setTint(0xFFFFFF);
+                }, this);
+
+                if (!ownedSongs.includes('song5')) {
+                    var buy7 = this.add.image(300, 530, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
+                        if (this.registry.get('coinBag') >= 10) {
+                            this.buySound.play();
+                            buy7.setVisible(false);
+                            coin7.setVisible(false);
+                            this.registry.get('ownedSongs').push('song5');
+                            this.registry.set('coinBag', this.registry.get('coinBag') - 10);
+                            coinText.setText('Coins: ' + this.registry.get('coinBag'));
+                        } else {
+                            errorSound.play();
+                        }
+
+                    });
+                    buy7.on('pointerover', function () {
+                        buy7.setTint(0xCCCCCC);
+                    }, this);
+
+                    buy7.on('pointerout', function () {
+                        buy7.setTint(0xFFFFFF);
+                    }, this);
+                    var coin7 = this.add.image(300, 715, 'coin').setScale(.125).setVisible(true);
+                }
+
+                var song5 = this.add.image(300, 615, 'songItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
+                    if (this.registry.get('ownedSongs').includes('song5')) {
+                        popSound.play();
+                        this.registry.set('equippedSong', 'song5');
+                    }
+                    else {
+                        errorSound.play();
+                    }
+                });
+
+                song5.on('pointerover', function () {
+                    song5.setTint(0xCCCCCC);
+                }, this);
+
+                song5.on('pointerout', function () {
+                    song5.setTint(0xFFFFFF);
+                }, this);
+
 
 
                 var clickInfo = this.add.image(675, 675, 'clickToEquip').setScale(0.85).setVisible(true);
@@ -690,11 +798,11 @@
                 });
 
                 goHome.on('pointerover', function () {
-                    goHome.setTint(0xCCCCCC); // Slightly darker tint when hovered
+                    goHome.setTint(0xCCCCCC);
                 }, this);
 
                 goHome.on('pointerout', function () {
-                    goHome.setTint(0xFFFFFF); // Reset to original tint when not hovered
+                    goHome.setTint(0xFFFFFF);
                 }, this);
 
 
