@@ -20,6 +20,8 @@
                 this.registry.set('coinBag', 50);
                 this.registry.set('ownedSongs', ['default'])
                 this.registry.set('equippedSong', 'default')
+                this.registry.set('ownedSkins',['default'])
+                this.registry.set('equippedSkin','default')
                 this.scene.start('Preloader');
             }
         }
@@ -71,6 +73,19 @@
                 this.load.image('skull', 'assets/dots/GameOver.png');
                 this.load.image('multiplier', 'assets/dots/Multiplier.png');
                 this.load.image('super', 'assets/dots/Super.png');
+
+                // Dots 2
+                this.load.image('skin_blue1', 'assets/dots2/Blue1.png');
+                this.load.image('skin_blue2', 'assets/dots2/Blue2.png');
+                this.load.image('skin_blue3', 'assets/dots2/Blue3.png');
+                this.load.image('skin_blue4', 'assets/dots2/Blue4.png');
+                this.load.image('skin_bomb', 'assets/dots2/Bomb.png');
+                this.load.image('skin_skull', 'assets/dots2/GameOver.png');
+                this.load.image('skin_super', 'assets/dots2/Super.png');
+                this.load.image('skin_multiplier', 'assets/dots2/Mulitplier.png');
+
+
+
 
                 // Dot pop effects
                 this.load.image('bluepop', 'assets/dots/pops/BluePop.png');
@@ -131,11 +146,11 @@
 
 
                 playButton.on('pointerover', function () {
-                    playButton.setTint(0xCCCCCC); 
+                    playButton.setTint(0xCCCCCC);
                 }, this);
 
                 playButton.on('pointerout', function () {
-                    playButton.setTint(0xFFFFFF); 
+                    playButton.setTint(0xFFFFFF);
                 }, this);
 
                 // Shop
@@ -149,11 +164,11 @@
                 }, this);
 
                 shopButton.on('pointerover', function () {
-                    shopButton.setTint(0xCCCCCC); 
+                    shopButton.setTint(0xCCCCCC);
                 }, this);
 
                 shopButton.on('pointerout', function () {
-                    shopButton.setTint(0xFFFFFF); 
+                    shopButton.setTint(0xFFFFFF);
                 }, this);
 
 
@@ -196,9 +211,12 @@
                 this.coinRewardText = this.add.text(450, 525, '', { fontSize: '60px', fill: '#FFF' }).setVisible(false);
 
                 this.chooseSong();
+                var isSkinEquipped = this.chooseSkin();
+                console.log(isSkinEquipped);
+
                 this.countdown(countdownText); // first do a 5 second countdown
                 new Promise((resolve) => {
-                    this.placeDots(resolve); // then we place dots
+                    this.placeDots(resolve, isSkinEquipped); // then we place dots
                 }).then(() => { // last we reward the player based on their score
                     this.giveCoins(this.score);
                     this.placeHighScore(this.score); // returns to main menu scene inside here
@@ -206,8 +224,6 @@
             }
 
             chooseSong = () => {
-                console.log(this.registry.get('equippedSong'));
-
                 switch (this.registry.get('equippedSong')) {
                     case 'song1':
                         this.song1 = this.sound.add('song1');
@@ -236,9 +252,24 @@
                 }
             }
 
-            placeDots(resolve) {
+            chooseSkin = () => {
+                const equippedSkin = this.registry.get('equippedSkin');
+                switch (equippedSkin) {
+                    case 'skin1':
+                        return true;
+                    case 'default':
+                        return false;
+                    default:
+                        console.log('CHOOSE SKIN ERROR!');
+                        return false;
+                }
+            }
+
+            placeDots(resolve, isSkinEquipped) {
                 let i = 0;
                 this.multiplierClickTime = 0;
+                var imagePrefix = isSkinEquipped ? 'skin_' : ''; // If isSkinEquipped is true, prefix with 'skin_'
+
                 setTimeout(() => {
                     dotInterval = setInterval(() => {
                         if (i < 99) {
@@ -248,7 +279,7 @@
 
                             switch (chooseDot) {
                                 case 0:
-                                    var blue1Dot = this.add.image(x, y, 'blue1').setVisible(true).setInteractive().on('pointerdown', () => {
+                                    var blue1Dot = this.add.image(x, y, imagePrefix + 'blue1').setVisible(true).setInteractive().on('pointerdown', () => {
                                         blue1Dot.destroy();
                                         this.createBluePop(x, y);
                                         this.multiplierBlueScoring();
@@ -260,7 +291,7 @@
                                     }, 1000);
                                     break;
                                 case 1:
-                                    var blue2Dot = this.add.image(x, y, 'blue2').setVisible(true).setInteractive().on('pointerdown', () => {
+                                    var blue2Dot = this.add.image(x, y, imagePrefix + 'blue2').setVisible(true).setInteractive().on('pointerdown', () => {
                                         blue2Dot.destroy();
                                         this.createBluePop(x, y);
                                         this.multiplierBlueScoring();
@@ -272,7 +303,7 @@
                                     }, 1000);
                                     break;
                                 case 2:
-                                    var blue3Dot = this.add.image(x, y, 'blue3').setVisible(true).setInteractive().on('pointerdown', () => {
+                                    var blue3Dot = this.add.image(x, y, imagePrefix + 'blue3').setVisible(true).setInteractive().on('pointerdown', () => {
                                         blue3Dot.destroy();
                                         this.createBluePop(x, y);
                                         this.multiplierBlueScoring();
@@ -284,7 +315,7 @@
                                     }, 1000);
                                     break;
                                 case 3:
-                                    var blue4Dot = this.add.image(x, y, 'blue4').setVisible(true).setInteractive().on('pointerdown', () => {
+                                    var blue4Dot = this.add.image(x, y, imagePrefix + 'blue4').setVisible(true).setInteractive().on('pointerdown', () => {
                                         blue4Dot.destroy();
                                         this.createBluePop(x, y);
                                         this.multiplierBlueScoring();
@@ -296,7 +327,7 @@
                                     }, 1000);
                                     break;
                                 case 4:
-                                    var bombDot = this.add.image(x, y, 'bomb').setVisible(true).setInteractive().on('pointerdown', () => {
+                                    var bombDot = this.add.image(x, y, imagePrefix + 'bomb').setVisible(true).setInteractive().on('pointerdown', () => {
                                         bombDot.destroy();
                                         this.createExplosion(x, y);
                                         if (this.multiplierClickTime > 0) {
@@ -321,7 +352,7 @@
                                     }, 1000);
                                     break;
                                 case 5:
-                                    var skullDot = this.add.image(x, y, 'skull').setVisible(true).setInteractive().on('pointerdown', () => {
+                                    var skullDot = this.add.image(x, y, imagePrefix + 'skull').setVisible(true).setInteractive().on('pointerdown', () => {
                                         skullDot.destroy();
                                         i = 200;
                                     });
@@ -332,7 +363,7 @@
                                     }, 1000);
                                     break;
                                 case 6:
-                                    var multiplierDot = this.add.image(x, y, 'multiplier').setVisible(true).setInteractive().on('pointerdown', () => {
+                                    var multiplierDot = this.add.image(x, y, imagePrefix + 'multiplier').setVisible(true).setInteractive().on('pointerdown', () => {
                                         multiplierDot.destroy();
                                         this.multiplierClicked = true;
                                         this.createZap(x, y);
@@ -348,7 +379,7 @@
                                     }, 1000);
                                     break;
                                 case 7:
-                                    var superDot = this.add.image(x, y, 'super').setVisible(true).setInteractive().on('pointerdown', () => {
+                                    var superDot = this.add.image(x, y, imagePrefix + 'super').setVisible(true).setInteractive().on('pointerdown', () => {
                                         superDot.destroy();
                                         this.createRedPop(x, y);
                                         if (this.multiplierClickTime > 0) {
@@ -538,6 +569,7 @@
                 highscoreLogo.setScale(0.65);
 
                 const ownedSongs = this.registry.get('ownedSongs');
+                const ownedSkins = this.registry.get('ownedSkins');
 
                 var popSound = this.sound.add('pop', { loop: false });
                 var errorSound = this.sound.add('error', { loop: false });
@@ -673,25 +705,58 @@
                     // update storage of item being owned
                 });
 
-                var buy4 = this.add.image(600, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
-                    console.log('user bought skin!');
+
+                if (!ownedSkins.includes('skin1')) {
+                    var buy4 = this.add.image(600, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', () => {
+                        if (this.registry.get('coinBag') >= 10) {
+                            this.buySound.play();
+                            buy4.setVisible(false);
+                            coin4.setVisible(false);
+                            this.registry.get('ownedSkins').push('skin1');
+                            this.registry.set('coinBag', this.registry.get('coinBag') - 10);
+                            coinText.setText('Coins: ' + this.registry.get('coinBag'));
+                        } else {
+                            errorSound.play();
+                        }
+                    });
+                    buy4.on('pointerover', function () {
+                        buy4.setTint(0xCCCCCC);
+                    }, this);
+
+                    buy4.on('pointerout', function () {
+                        buy4.setTint(0xFFFFFF);
+                    }, this);
+
+                    var coin4 = this.add.image(600, 450, 'coin').setScale(.125).setVisible(true);
+                }
+
+                var skin1 = this.add.image(600, 350, 'skinItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', () => {
+                    if (this.registry.get('ownedSkins').includes('skin1')) {
+                        popSound.play();
+                        this.registry.set('equippedSkin', 'skin1');
+                    } else {
+                        errorSound.play();
+                    }
                 });
-                buy4.on('pointerover', function () {
-                    buy4.setTint(0xCCCCCC);
+                skin1.on('pointerover', function () {
+                    skin1.setTint(0xCCCCCC);
                 }, this);
 
-                buy4.on('pointerout', function () {
-                    buy4.setTint(0xFFFFFF);
+                skin1.on('pointerout', function () {
+                    skin1.setTint(0xFFFFFF);
                 }, this);
-
-                var coin4 = this.add.image(600, 450, 'coin').setScale(.125).setVisible(true);
-
-                var skin1 = this.add.image(600, 350, 'skinItem').setScale(.5).setVisible(true).setInteractive().on('pointerdown', function () {
-                    // update storage of item being owned
-                });
 
                 var buy5 = this.add.image(750, 265, 'buy').setScale(.2).setVisible(true).setInteractive().on('pointerdown', function () {
-                    console.log('user bought background');
+                    if (this.registry.get('coinBag') >= 10) {
+                        this.buySound.play();
+                        buy5.setVisible(false);
+                        coin5.setVisible(false);
+                        this.registry.get('ownedSkins').push('skin1');
+                        this.registry.set('coinBag', this.registry.get('coinBag') - 10);
+                        coinText.setText('Coins: ' + this.registry.get('coinBag'));
+                    } else {
+                        errorSound.play();
+                    }
                 });
                 buy5.on('pointerover', function () {
                     buy5.setTint(0xCCCCCC);
